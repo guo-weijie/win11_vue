@@ -1,18 +1,29 @@
 <template>
-  <div class="app" :data-theme="theme" ref="app"
-    :style="{ backgroundImage: 'url(' + require('@/assets/wallpaper' + backgroundImgUrl) + ')' }">
+  <div class="app" :data-theme="theme" :style="{ backgroundImage: backgroundStyle }">
     <router-view></router-view>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { userStore } from '@/store/user'
-import { storeToRefs } from 'pinia'
+import { computed } from "vue";
+import { userStore } from "@/store/user";
+import { storeToRefs } from "pinia";
 
-const store = userStore()
-const app = ref()
-const { backgroundImgUrl, theme } = storeToRefs(store)
+const store = userStore();
+const { backgroundImgUrl, theme } = storeToRefs(store);
+const images = import.meta.glob<{ default: string }>("/src/assets/wallpaper/**/*.jpg", { eager: true });
+
+const backgroundStyle = computed(() => {
+  try {
+    for (const path in images) {
+      if (path.includes(backgroundImgUrl.value)) {
+        return `url(${images[path].default})`;
+      }
+    }
+  } catch (error) {
+    return "";
+  }
+});
 </script>
 
 <style lang="scss" scoped>

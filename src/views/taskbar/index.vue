@@ -39,7 +39,7 @@
 
     <!-- 开始菜单 -->
     <div class="startMenu center" :class="{ startMenuHeight: openStart }">
-      <StartMenu @pleaseOpenSearch="taskBarLeftNoLine({ name: 'search', open: false })" />
+      <StartMenu @pleaseOpenSearch="taskBarLeftNoLine({ name: 'search', url: '', open: false })" />
     </div>
     <!-- 搜索 -->
     <div class="search center" :class="{ searchHeight: openSearch }">
@@ -56,231 +56,327 @@
     <!-- 隐藏的图标 -->
     <div class="hideIconBox" ref="hideIconBox">
       <div class="iconBoxItem">
-        <img :src="require('@/assets/icon/appIcon/security.png')" alt="microsoft defender"
-          title="Windows 安全中心 - 不需要执行操作" />
+        <img :src="securityIcon" alt="microsoft defender" title="Windows 安全中心 - 不需要执行操作" />
       </div>
       <div class="iconBoxItem">
-        <img :src="require('@/assets/icon/appIcon/oneDrive.png')" alt="microsoft oneDrive" title="oneDrive 最新" />
+        <img :src="oneDriveIcon" alt="microsoft oneDrive" title="oneDrive 最新" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { timeType, Rstring } from '@/type'
-import { PropType, ref, watchEffect, reactive, computed } from 'vue';
-import MyCalendar from '@/components/myCalendar/index.vue'
-import ControlCenter from './components/controlCenter.vue'
-import StartMenu from './components/startMenu.vue'
-import Search from './components/search.vue'
-import { KeyboardArrowUpTwotone, KeyboardArrowDownTwotone } from '@vicons/material'
-import { NIcon } from 'naive-ui'
-import { appStore, appItem } from '@/store/app'
-import bus from '@/utils/bus'
+import { ref, reactive, computed, type PropType } from "vue";
+import MyCalendar from "@/components/myCalendar/index.vue";
+import ControlCenter from "./components/controlCenter.vue";
+import StartMenu from "./components/startMenu.vue";
+import Search from "./components/search.vue";
+import { KeyboardArrowUpTwotone, KeyboardArrowDownTwotone } from "@vicons/material";
+import { NIcon } from "naive-ui";
+import { appStore, type appItem } from "@/store/app";
+import bus from "@/utils/bus";
 
-const store = appStore()
+import securityIcon from "@/assets/icon/appIcon/security.png";
+import oneDriveIcon from "@/assets/icon/appIcon/oneDrive.png";
+import homeIcon from "@/assets/icon/appIcon/home.png";
+import searchIcon from "@/assets/icon/appIcon/search.png";
+import widgetIcon from "@/assets/icon/appIcon/widget.png";
+import wifiIcon from "@/assets/icon/systemIcon/wifi.png";
+import audioIcon from "@/assets/icon/systemIcon/audio.png";
+
+const store = appStore();
+
+// Props 定义
 const props = defineProps({
-  currentTime: Object as PropType<timeType>
-})
+  currentTime: {
+    type: Object as PropType<{
+      year: number;
+      month: number | string;
+      day: number | string;
+      hour: number | string;
+      minute: string;
+      second: string;
+    }>,
+    default: () => ({
+      year: 0,
+      month: 0,
+      day: 0,
+      hour: 0,
+      minute: "",
+      second: "",
+    }),
+  },
+});
 
 /**
- * 抛出一个事件：关闭所有任务栏的弹框
+ * 关闭所有任务栏弹窗
  */
-// 任务栏点击事件
-//  -> 每一个具体的功能按钮都阻止事件冒泡传播，所以能触发事件的点击动作都是点击任务栏其余部分，此时直接执行弹窗关闭操作即可
+const closeAllPopups = () => {
+  // 关闭左侧应用菜单
+  noUnderLineApp.forEach((item) => {
+    item.open = false;
+  });
+
+  // 关闭右侧弹窗
+  calendarBox.value && (calendarBox.value.style.right = "-500px");
+  controlCenter.value && (controlCenter.value.style.right = "-500px");
+  hideIconBox.value && (hideIconBox.value.style.height = "0px");
+  hideIcon.value = "up";
+};
+
+// 任务栏点击事件 - 点击空白区域关闭所有弹窗
 const taskbarEvent = () => {
-  taskBarLeftNoLine()
-  taskBarRight()
-}
-bus.on('closeTaskbar', () => {
-  taskbarEvent()
-})
+  closeAllPopups();
+};
+
+// 监听全局关闭事件
+bus.on("closeTaskbar", closeAllPopups);
 
 /**
- * 任务栏左侧
+ * 任务栏左侧 - 无下划线应用（开始、搜索、小组件）
  */
-// 无下划线应用 -> 开始按钮，搜索按钮，小组件
-const noUnderLineApp = reactive([{
-  name: 'start',
-  url: require('@/assets/icon/appIcon/home.png'),
-  open: false
-}, {
-  name: 'search',
-  url: require('@/assets/icon/appIcon/search.png'),
-  open: false
-}, {
-  name: 'widget',
-  url: require('@/assets/icon/appIcon/widget.png'),
-  open: false
-}])
-
-const openStart = computed(() => noUnderLineApp[0].open)
-const openSearch = computed(() => noUnderLineApp[1].open)
-
-// 无下划线应用点击事件
-const taskBarLeftNoLine = (value?: { name: string, open: boolean } | undefined, clear?: string) => {
-  if (clear) {
-    taskBarRight()
-  }
-  noUnderLineApp.forEach(item => {
-    if (item.name === value?.name) {
-      item.open = !item.open
-    } else {
-      item.open = false
-    }
-  })
+interface TaskBarItem {
+  name: string;
+  url: string;
+  open: boolean;
 }
-// 有下划线应用 -> 包括常驻和打开时驻留的
-// const underLineApp = computed(() => store.getApp.filter((item: appItem) => item.isTaskBar))
-const underLineApp = computed(() => store.getTypeApp('isTaskBar'))
-// 有下划线应用点击事件
-const taskBarLeftHaveLine = (value: { name: string; }) => {
-  taskbarEvent()
-  /**
-   * 应用为打开状态时，若
-   *  mini: true, hidden: true -> 应用为最小化状态，应处理为：
-   *  mini: false, hidden: false；若
-   *  mini: 
-   * 
-   * 
-   */
-  underLineApp.value.forEach((item: appItem) => {
-    if (item.name === value?.name) {
-      if (item.open) {
-        if (item.isTop) {
-          store.changeAppStatus({
-            name: item.name,
-            key: 'hidden',
-            value: true
-          })
-          store.changeAppStatus({
-            name: item.name,
-            key: 'mini',
-            value: true
-          })
-        } else {
-          if (!item.hidden) {
-            store.changeAppStatus({
-              name: item.name,
-              key: 'mini',
-              value: false
-            })
-            bus.emit(value.name)
-          } else {
-            store.changeAppStatus({
-              name: item.name,
-              key: 'hidden',
-              value: false
-            })
-            store.changeAppStatus({
-              name: item.name,
-              key: 'mini',
-              value: false
-            })
-            bus.emit(value.name)
-          }
-        }
-      } else {
-        store.changeAppStatus({
-          name: item.name,
-          key: 'open',
-          value: true
-        })
-        bus.emit(value.name)
-      }
+
+const noUnderLineApp = reactive<TaskBarItem[]>([
+  {
+    name: "start",
+    url: homeIcon,
+    open: false,
+  },
+  {
+    name: "search",
+    url: searchIcon,
+    open: false,
+  },
+  {
+    name: "widget",
+    url: widgetIcon,
+    open: false,
+  },
+]);
+
+const openStart = computed(() => noUnderLineApp[0]?.open ?? false);
+const openSearch = computed(() => noUnderLineApp[1]?.open ?? false);
+
+/**
+ * 无下划线应用点击事件
+ * @param value 点击的应用项
+ * @param clear 是否需要清除其他状态
+ */
+const taskBarLeftNoLine = (value?: TaskBarItem, clear?: string) => {
+  if (clear) {
+    // 关闭右侧弹窗
+    calendarBox.value && (calendarBox.value.style.right = "-500px");
+    controlCenter.value && (controlCenter.value.style.right = "-500px");
+    hideIconBox.value && (hideIconBox.value.style.height = "0px");
+    hideIcon.value = "up";
+  }
+
+  noUnderLineApp.forEach((item) => {
+    if (value && item.name === value.name) {
+      item.open = !item.open;
     } else {
+      item.open = false;
+    }
+  });
+};
+/**
+ * 任务栏左侧 - 有下划线应用（已打开的应用）
+ */
+const underLineApp = computed(() => store.getTypeApp("isTaskBar"));
+/**
+ * 有下划线应用点击事件 - 处理应用的打开/最小化/还原
+ * @param value 点击的应用项
+ */
+const taskBarLeftHaveLine = (value: { name: string }) => {
+  // 先关闭所有弹窗
+  closeAllPopups();
+
+  underLineApp.value.forEach((item: appItem) => {
+    if (item.name === value.name) {
+      handleAppClick(item);
+    } else {
+      // 其他已打开且未最小化的应用设为最小化
       if (item.open && !item.mini) {
         store.changeAppStatus({
           name: item.name,
-          key: 'mini',
-          value: true
-        })
+          key: "mini",
+          value: true,
+        });
       }
     }
-  })
-}
-// 图标点击动画
-const vClickAnimal = {
-  mounted(el: Element) {
-    el.addEventListener('mousedown', () => {
-      el.className = ' narrow'
-    })
-    el.addEventListener('click', () => {
-      el.className = ' clickAniamtion'
-    })
-  }
-}
+  });
+};
 
 /**
- * 任务栏右侧
+ * 处理单个应用的点击逻辑
+ * @param item 应用项
  */
-// 任务栏右侧弹窗DOM & 值
-const calendarBox = ref()
-const controlCenter = ref()
-const hideIconBox = ref()
-const hideIcon: Rstring = ref('up')
-const lang: Rstring = ref('中')
-// 任务栏弹窗状态更改
+const handleAppClick = (item: appItem) => {
+  if (!item.open) {
+    // 应用未打开，则打开
+    store.changeAppStatus({
+      name: item.name,
+      key: "open",
+      value: true,
+    });
+    bus.emit(item.name);
+  } else if (item.isTop) {
+    // 应用在最顶层，则最小化并隐藏
+    store.changeAppStatus({
+      name: item.name,
+      key: "hidden",
+      value: true,
+    });
+    store.changeAppStatus({
+      name: item.name,
+      key: "mini",
+      value: true,
+    });
+  } else if (!item.hidden) {
+    // 应用显示中但未在顶层，则最小化
+    store.changeAppStatus({
+      name: item.name,
+      key: "mini",
+      value: false,
+    });
+    bus.emit(item.name);
+  } else {
+    // 应用隐藏中，则还原显示
+    store.changeAppStatus({
+      name: item.name,
+      key: "hidden",
+      value: false,
+    });
+    store.changeAppStatus({
+      name: item.name,
+      key: "mini",
+      value: false,
+    });
+    bus.emit(item.name);
+  }
+};
+/**
+ * 图标点击动画指令
+ */
+const vClickAnimal = {
+  mounted(el: HTMLElement) {
+    el.addEventListener("mousedown", () => {
+      el.className = "narrow";
+    });
+    el.addEventListener("click", () => {
+      el.className = "clickAniamtion";
+      // 动画结束后移除类名
+      setTimeout(() => {
+        el.className = "";
+      }, 500);
+    });
+  },
+};
+
+/**
+ * 任务栏右侧 - 弹窗 DOM 引用
+ */
+const calendarBox = ref<HTMLElement | null>(null);
+const controlCenter = ref<HTMLElement | null>(null);
+const hideIconBox = ref<HTMLElement | null>(null);
+
+/**
+ * 任务栏右侧 - 状态
+ */
+const hideIcon = ref<"up" | "down">("up");
+const lang = ref<"中" | "英">("中");
+/**
+ * 切换弹窗显示状态
+ * @param element 元素引用
+ * @param property CSS 属性名
+ * @param showValue 显示时的值
+ * @param hideValue 隐藏时的值
+ */
+const togglePopup = (
+  element: HTMLElement | null,
+  property: "right" | "height",
+  showValue: string,
+  hideValue: string,
+) => {
+  if (!element) return;
+
+  const style = element.style;
+
+  if (property === "right") {
+    const currentValue = parseInt(style.right || "0");
+    style.right = currentValue <= 0 ? showValue : hideValue;
+  } else {
+    style.height = style.height === "0px" ? showValue : hideValue;
+  }
+};
+
+/**
+ * 任务栏右侧点击事件
+ * @param id 点击的功能标识
+ * @param clear 是否需要清除其他状态
+ */
 const taskBarRight = (id?: string, clear?: string) => {
   if (clear) {
-    taskBarLeftNoLine()
+    // 关闭左侧应用菜单
+    noUnderLineApp.forEach((item) => {
+      item.open = false;
+    });
   }
-  let boxDom
-  if (id === 'calendar') {
-    boxDom = calendarBox.value.style
-    if (parseInt(boxDom.right) > 0) {
-      boxDom.right = '-500px'
-    } else {
-      boxDom.right = '12px'
-    }
-  } else {
-    calendarBox.value.style.right = '-500px'
+
+  switch (id) {
+    case "calendar":
+      togglePopup(calendarBox.value, "right", "12px", "-500px");
+      break;
+    case "controlCenter":
+      togglePopup(controlCenter.value, "right", "12px", "-500px");
+      break;
+    case "hideIcon":
+      togglePopup(hideIconBox.value, "height", "auto", "0px");
+      hideIcon.value = hideIcon.value === "up" ? "down" : "up";
+      break;
+    case "language":
+      lang.value = lang.value === "中" ? "英" : "中";
+      break;
+    default:
+      // 关闭所有弹窗
+      calendarBox.value && (calendarBox.value.style.right = "-500px");
+      controlCenter.value && (controlCenter.value.style.right = "-500px");
+      hideIconBox.value && (hideIconBox.value.style.height = "0px");
+      hideIcon.value = "up";
   }
-  if (id === 'controlCenter') {
-    boxDom = controlCenter.value.style
-    if (parseInt(boxDom.right) > 0) {
-      boxDom.right = '-500px'
-    } else {
-      boxDom.right = '12px'
-    }
-  } else {
-    controlCenter.value.style.right = '-500px'
-  }
-  if (id === 'hideIcon') {
-    boxDom = hideIconBox.value.style
-    if (boxDom.height === 'auto') {
-      hideIcon.value = 'up'
-      boxDom.height = '0px'
-    } else {
-      boxDom.height = 'auto'
-      hideIcon.value = 'down'
-    }
-  } else {
-    hideIconBox.value.style.height = '0px'
-  }
-  if (id === 'language') {
-    lang.value = lang.value === '中' ? '英' : '中'
-  }
-}
-// 控制中心相关
+};
+/**
+ * 控制中心图标配置
+ */
 const controlCenterIcon = reactive({
-  wifi: require('@/assets/icon/systemIcon/wifi.png'),
-  audio: require('@/assets/icon/systemIcon/audio.png')
-})
+  wifi: wifiIcon,
+  audio: audioIcon,
+});
 
-// 右下角时间相关
-const upTime: Rstring = ref('')
-const btmTime: Rstring = ref('')
+/**
+ * 右下角时间显示
+ */
+const upTime = computed(() => {
+  const hour = props.currentTime?.hour ?? 0;
+  const minute = props.currentTime?.minute ?? "00";
+  return `${hour}:${minute}`;
+});
 
-watchEffect(() => {
-  upTime.value = `${props.currentTime?.hour}：${props.currentTime?.minute}`
-  btmTime.value = `${props.currentTime?.year}/${props.currentTime?.month}/${props.currentTime?.day}`
-})
-
+const btmTime = computed(() => {
+  const year = props.currentTime?.year ?? 0;
+  const month = props.currentTime?.month ?? 0;
+  const day = props.currentTime?.day ?? 0;
+  return `${year}/${month}/${day}`;
+});
 </script>
 
 <style lang="scss" scoped>
-@import "@/style/public";
+@use "@/style/public" as *;
 
 @mixin taskbarFnStyle {
   height: 80%;
@@ -294,9 +390,13 @@ watchEffect(() => {
 }
 
 .taskbar {
-  // overflow: hidden;
   position: relative;
   z-index: 9999;
+  width: 100%;
+  border-top: 1px solid #e5e5e5;
+  height: 47px;
+  line-height: 47px;
+  background-color: rgba(228, 239, 250, 0.9);
 
   &Box {
     width: 100%;

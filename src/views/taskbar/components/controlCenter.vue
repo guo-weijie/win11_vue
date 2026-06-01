@@ -6,7 +6,7 @@
         <div :class="{ itemBox: true, itemBoxEdit: editOperate }" v-for="item in fnShowItem" :key="item.name">
           <div :class="{ boxIcon: true, selectItem: item.select && !item.menu }" @click="selectFn(item)">
             <img :src="item.icon" :alt="item.name" />
-            <n-icon v-if="item.menu" size="16" style="margin-left: 8px;">
+            <n-icon v-if="item.menu" size="16" style="margin-left: 8px">
               <KeyboardArrowRightRound />
             </n-icon>
           </div>
@@ -23,7 +23,7 @@
       </div>
       <!-- 音量调节 -->
       <div class="audioControl">
-        <img :src="require('@/assets/icon/systemIcon/audio.png')" alt="音量" />
+        <img :src="audioIcon" alt="音量" />
         <div class="controlSlider">
           <n-slider v-model:value="audioValue" />
         </div>
@@ -41,12 +41,23 @@
         <div v-if="keyBoardOpearStatus" class="keyboardStyle">
           键盘布局
           <n-icon size="15px">
-            <svg t="1647585985521" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-              p-id="8197" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64">
+            <svg
+              t="1647585985521"
+              class="icon"
+              viewBox="0 0 1024 1024"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              p-id="8197"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="64"
+              height="64"
+            >
               <defs />
               <path
                 d="M490.666667 128v362.666667H128V128h362.666667z m0 768H128v-362.666667h362.666667V896z m42.666666-768H896v362.666667h-362.666667V128z m362.666667 405.333333V896h-362.666667v-362.666667H896z"
-                p-id="8198" fill="#5b5d60" />
+                p-id="8198"
+                fill="#5b5d60"
+              />
             </svg>
           </n-icon>
           <span>空格键</span>
@@ -64,7 +75,7 @@
             {{ item.name }}
           </n-button>
           <div>
-            {{ item.status ? '开' : '关' }}
+            {{ item.status ? "开" : "关" }}
             <n-switch v-model:value="item.status" />
           </div>
         </div>
@@ -72,17 +83,15 @@
       <!-- 音量 -->
       <div v-if="audioFnOpearStatus" class="opearBody bodyAudio">
         <div class="audioItem">
-          <n-h4 prefix="bar" type="info" style="color:#18191a;font-size: 14px;">
-            <n-icon color="#18191a" size="18">
-              <SpeakerOutlined />
-            </n-icon>扬声器（High Definition Audio Device）
+          <n-h4 prefix="bar" type="info" style="color: #18191a; font-size: 14px">
+            <n-icon color="#18191a" size="18"> <SpeakerOutlined /> </n-icon>扬声器（High Definition Audio Device）
           </n-h4>
         </div>
       </div>
       <!-- 键盘 -->
       <div v-if="keyBoardOpearStatus" class="opearBody bodyKeyboard">
         <div class="audioItem">
-          <n-h4 prefix="bar" type="info" style="color:#18191a;font-size: 14px;">
+          <n-h4 prefix="bar" type="info" style="color: #18191a; font-size: 14px">
             <div class="pinyin">拼</div>
             <div class="itemDesc">
               <div>中文(简体，中国)</div>
@@ -91,13 +100,12 @@
           </n-h4>
         </div>
       </div>
-      <div class="operaFooter">更多{{ helpFnOperaStatus ? '辅助功能' : audioFnOpearStatus ? '音量' : '键盘' }}设置</div>
+      <div class="operaFooter">更多{{ helpFnOperaStatus ? "辅助功能" : audioFnOpearStatus ? "音量" : "键盘" }}设置</div>
     </div>
     <div :class="{ containerSet: true, editSet: !editOperate, completeAdd: editOperate }">
       <div v-show="!editOperate">
-        <img class="setEdit" :src="require('@/assets/icon/systemIcon/edit.png')" alt="操作中心编辑"
-          @click="editOperate = true" />
-        <img class="setSettings" :src="require('@/assets/icon/systemIcon/settings.png')" alt="操作中心设置" />
+        <img class="setEdit" :src="editIcon" alt="操作中心编辑" @click="editOperate = true" />
+        <img class="setSettings" :src="settingsIcon" alt="操作中心设置" />
       </div>
       <div v-show="editOperate">
         <n-button secondary color="#18191a" @click="editOperate = false">
@@ -131,110 +139,162 @@
   </div>
 </template>
 
-<script lang='ts' setup>
-import { reactive, computed, ref, markRaw } from 'vue'
-import { fnItemType, fnItemTypeCom, fnItemListType, Rnumber, Rboolean } from '@/type/index'
-import { KeyboardArrowRightRound, CloseRound, AddRound, CheckRound, ArrowBackRound, ColorLensOutlined, SpeakerOutlined, LoupeRound, KeyboardCommandKeyFilled } from '@vicons/material'
-import { DesktopSpeaker20Regular, Speaker248Regular } from '@vicons/fluent'
-import { NIcon, NSlider, NButton, NPopover, NSwitch, NH4 } from 'naive-ui'
-const audioValue: Rnumber = ref(50)
-const zIndex = 9999
-// 不显示的数据，即添加按钮的选项
-const fnAddItem: fnItemTypeCom = computed(() => fnAllItem.filter(item => !item.show))
-// 固定显示的数据
-const fnShowItem: fnItemTypeCom = computed(() => fnAllItem.filter(item => item.show))
-// 暂无图标，以后找到了再补上
-const fnAllItem: fnItemType = reactive([{
-  name: '夜间模式',
-  icon: require('@/assets/icon/systemIcon/nightlight.png'),
-  show: true,
-  select: false,
-  menu: false
-}, {
-  name: '专注助手',
-  icon: require('@/assets/icon/systemIcon/moon.png'),
-  show: true,
-  select: false,
-  menu: false
-}, {
-  name: '辅助功能',
-  icon: require('@/assets/icon/systemIcon/nightlight.png'),
-  show: true,
-  select: false,
-  menu: true
-}, {
-  name: '投放',
-  icon: require('@/assets/icon/systemIcon/nightlight.png'),
-  show: false,
-  select: false,
-  menu: false
-}, {
-  name: '键盘布局',
-  icon: require('@/assets/icon/systemIcon/keyboard.png'),
-  show: true,
-  select: false,
-  menu: true
-}, {
-  name: '投影',
-  icon: require('@/assets/icon/systemIcon/nightlight.png'),
-  show: false,
-  select: false,
-  menu: false
-},])
-// 点击功能菜单
-const selectFn = (item: fnItemListType) => {
-  if (editOperate.value) return
-  if (item.name === '辅助功能') {
-    helpFnOperaStatus.value = true
-    return
-  }
-  if (item.name === '键盘布局') {
-    keyBoardOpearStatus.value = true
-    return
-  }
-  item.select = !item.select
+<script lang="ts" setup>
+import { reactive, computed, ref, markRaw } from "vue";
+import type { Component } from "vue";
+import {
+  KeyboardArrowRightRound,
+  CloseRound,
+  AddRound,
+  CheckRound,
+  ArrowBackRound,
+  ColorLensOutlined,
+  SpeakerOutlined,
+  LoupeRound,
+  KeyboardCommandKeyFilled,
+} from "@vicons/material";
+import { DesktopSpeaker20Regular, Speaker248Regular } from "@vicons/fluent";
+import { NIcon, NSlider, NButton, NPopover, NSwitch, NH4 } from "naive-ui";
+
+import audioIcon from "@/assets/icon/systemIcon/audio.png";
+import editIcon from "@/assets/icon/systemIcon/edit.png";
+import settingsIcon from "@/assets/icon/systemIcon/settings.png";
+import nightlightIcon from "@/assets/icon/systemIcon/nightlight.png";
+import moonIcon from "@/assets/icon/systemIcon/moon.png";
+import keyboardIcon from "@/assets/icon/systemIcon/keyboard.png";
+
+// 类型定义
+interface ControlItem {
+  name: string;
+  icon: string;
+  show: boolean;
+  select: boolean;
+  menu: boolean;
 }
+
+interface HelpFunction {
+  icon: Component;
+  name: string;
+  status: boolean;
+}
+
+const audioValue = ref(50);
+const zIndex = 9999;
+
 // 编辑操作状态
-const editOperate: Rboolean = ref(false)
-// 辅助功能数据
-const helpFn = reactive([{
-  icon: markRaw(LoupeRound),
-  name: '放大镜',
-  status: false
-}, {
-  icon: markRaw(ColorLensOutlined),
-  name: '颜色滤镜',
-  status: true
-}, {
-  icon: markRaw(DesktopSpeaker20Regular),
-  name: '讲述人',
-  status: false
-}, {
-  icon: markRaw(Speaker248Regular),
-  name: '单声道音频',
-  status: true
-}, {
-  icon: markRaw(KeyboardCommandKeyFilled),
-  name: '粘滞键',
-  status: false
-}])
+const editOperate = ref(false);
+
 // 辅助功能操作状态
-const helpFnOperaStatus = ref(false)
+const helpFnOperaStatus = ref(false);
 // 音量功能操作状态
-const audioFnOpearStatus = ref(false)
+const audioFnOpearStatus = ref(false);
 // 键盘功能操作状态
-const keyBoardOpearStatus = ref(false)
+const keyBoardOpearStatus = ref(false);
+
+// 所有功能项数据
+const fnAllItem = reactive<ControlItem[]>([
+  {
+    name: "夜间模式",
+    icon: nightlightIcon,
+    show: true,
+    select: false,
+    menu: false,
+  },
+  {
+    name: "专注助手",
+    icon: moonIcon,
+    show: true,
+    select: false,
+    menu: false,
+  },
+  {
+    name: "辅助功能",
+    icon: nightlightIcon,
+    show: true,
+    select: false,
+    menu: true,
+  },
+  {
+    name: "投放",
+    icon: nightlightIcon,
+    show: false,
+    select: false,
+    menu: false,
+  },
+  {
+    name: "键盘布局",
+    icon: keyboardIcon,
+    show: true,
+    select: false,
+    menu: true,
+  },
+  {
+    name: "投影",
+    icon: nightlightIcon,
+    show: false,
+    select: false,
+    menu: false,
+  },
+]);
+
+// 不显示的数据，即添加按钮的选项
+const fnAddItem = computed(() => fnAllItem.filter((item) => !item.show));
+// 固定显示的数据
+const fnShowItem = computed(() => fnAllItem.filter((item) => item.show));
+
+// 辅助功能数据
+const helpFn = reactive<HelpFunction[]>([
+  {
+    icon: markRaw(LoupeRound),
+    name: "放大镜",
+    status: false,
+  },
+  {
+    icon: markRaw(ColorLensOutlined),
+    name: "颜色滤镜",
+    status: true,
+  },
+  {
+    icon: markRaw(DesktopSpeaker20Regular),
+    name: "讲述人",
+    status: false,
+  },
+  {
+    icon: markRaw(Speaker248Regular),
+    name: "单声道音频",
+    status: true,
+  },
+  {
+    icon: markRaw(KeyboardCommandKeyFilled),
+    name: "粘滞键",
+    status: false,
+  },
+]);
+
+// 点击功能菜单
+const selectFn = (item: ControlItem) => {
+  if (editOperate.value) return;
+  
+  if (item.name === "辅助功能") {
+    helpFnOperaStatus.value = true;
+    return;
+  }
+  if (item.name === "键盘布局") {
+    keyBoardOpearStatus.value = true;
+    return;
+  }
+  item.select = !item.select;
+};
+
 // 二级操作页返回箭头点击事件 -> 所有二级操作状态赋值为 false 即可
 const backFnMenu = () => {
-  helpFnOperaStatus.value = false
-  audioFnOpearStatus.value = false
-  keyBoardOpearStatus.value = false
-}
+  helpFnOperaStatus.value = false;
+  audioFnOpearStatus.value = false;
+  keyBoardOpearStatus.value = false;
+};
 </script>
 
-<style lang='scss' scoped>
-@import "@/style/public";
-
+<style lang="scss" scoped>
 .controlCneterContainer {
   width: 358px;
   height: 337px;
@@ -423,7 +483,7 @@ const backFnMenu = () => {
     color: #1a1a1b !important;
     user-select: none;
 
-    &>div {
+    & > div {
       padding: 4px 0;
     }
 
@@ -444,7 +504,7 @@ const backFnMenu = () => {
     font-weight: bold;
     @include flex(flex-start, center);
 
-    &>.n-icon {
+    & > .n-icon {
       margin-right: 18px;
     }
 

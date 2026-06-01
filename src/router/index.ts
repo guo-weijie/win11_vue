@@ -1,23 +1,46 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import Login from '@/views/login/index.vue'
-import PowerOn from '@/views/powerOn/index.vue'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from "vue-router";
 
-const routes: Array<RouteRecordRaw> = [
+// 路由配置
+const routes: RouteRecordRaw[] = [
   {
-    path: '/',
-    component: PowerOn
-  }, {
-    path: '/login',
-    component: Login
-  }, {
-    path: '/home',
-    component: () => import('@/views/home.vue')
-  }
-]
+    path: "/",
+    name: "PowerOn",
+    component: () => import("@/views/powerOn/index.vue"),
+    meta: {
+      title: "开机",
+    },
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/login/index.vue"),
+    meta: {
+      title: "登录",
+    },
+  },
+  {
+    path: "/home",
+    name: "Home",
+    component: () => import("@/views/home.vue"),
+    meta: {
+      title: "主页"
+    },
+  },
+];
 
+// 创建路由实例
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
-})
+  routes,
+});
 
-export default router
+// 全局前置守卫
+router.beforeEach((to, _from, next) => {
+  // 设置页面标题
+  if (to.meta.title) {
+    document.title = to.meta.title as string;
+  }
+  next();
+});
+
+export default router;

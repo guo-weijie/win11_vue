@@ -1,10 +1,10 @@
 <template>
-  <div class="appContainer" ref="edgeBox" @click.stop="edgeFn">
+  <div class="appContainer" ref="edgeBox" @click.stop="bringToFront">
     <!-- 标题栏 -->
     <TitleBlock title="Edge" bgColor="#cdcdcd">
       <div class="titleLeft">
         <div class="leftTagName">
-          <img :src="require('@/assets/icon/appIcon/home.png')" alt="windows11" />
+          <img src="@/assets/icon/appIcon/home.png" alt="windows11" />
           Windows 11
         </div>
         <n-button size="tiny" :bordered="false">
@@ -39,8 +39,14 @@
           </n-icon>
         </template>
       </n-button>
-      <n-input v-model:value="inputValue" type="text" autofocus maxlength="8182" @input="onInput"
-        @keydown.enter="inputComplete">
+      <n-input
+        v-model:value="inputValue"
+        type="text"
+        autofocus
+        maxlength="8182"
+        @input="onInput"
+        @keydown.enter="inputComplete"
+      >
         <template #prefix>
           <n-icon color="#000" :component="inputBarIcon"></n-icon>
         </template>
@@ -53,94 +59,158 @@
   </div>
 </template>
 
-<script lang='ts' setup>
-import { ArrowLeft24Regular, ArrowRight24Regular, ArrowClockwise48Regular, LockClosed20Regular, Search20Regular, Dismiss20Filled } from '@vicons/fluent'
-import { NIcon, NButton, NInput } from 'naive-ui'
-import { ref, shallowRef, watch, nextTick, onMounted } from 'vue'
-import bus from '@/utils/bus'
-import { appStore } from '@/store/app'
-import TitleBlock from '@/components/titleBlock'
+<script lang="ts" setup>
+import {
+  ArrowLeft24Regular,
+  ArrowRight24Regular,
+  ArrowClockwise48Regular,
+  LockClosed20Regular,
+  Search20Regular,
+  Dismiss20Filled,
+} from "@vicons/fluent";
+import { NIcon, NButton, NInput } from "naive-ui";
+import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted } from "vue";
+import bus from "@/utils/bus";
+import { appStore } from "@/store/app";
+import TitleBlock from "@/components/titleBlock";
 
-const store = appStore()
-// 记录浏览器历史记录
-const historyData = ['https://www.bing.com']
-// 当前所在的历史记录的位置
-let step = ref(0)
-// 输入框前图标
-let inputBarIcon = shallowRef(Search20Regular)
-// iframe 值
-const edgeUrl = ref('https://bing.com')
+// 类型定义
+type NavigationDirection = -1 | 0 | 1;
+
+// Store 实例
+const store = appStore();
+
+// 常量定义
+const DEFAULT_URL = "https://keep-silent.com";
+const BING_SEARCH_URL = "https://cn.bing.com/search?q=";
+const GRAY_COLOR = "#cccccc";
+const BLACK_COLOR = "#000";
+
+// 浏览器历史记录
+const historyData = ref<string[]>([DEFAULT_URL]);
+// 当前所在的历史记录位置
+const step = ref(0);
+
+// 输入框前图标（使用 shallowRef 优化性能）
+const inputBarIcon = shallowRef(Search20Regular);
+
+// iframe URL
+const edgeUrl = ref(DEFAULT_URL);
 // 用户输入的值
-const inputValue = ref('https://bing.com')
-// 输入完成按回车键触发事件
+const inputValue = ref(DEFAULT_URL);
+
+// Edge 容器引用
+const edgeBox = ref<HTMLElement | null>(null);
+// 计算属性：判断是否可以后退/前进
+const canGoBack = computed(() => step.value > 0);
+const canGoForward = computed(() => step.value < historyData.value.length - 1);
+
+// 计算属性：按钮颜色
+const leftGray = computed(() => (canGoBack.value ? BLACK_COLOR : GRAY_COLOR));
+const rightGray = computed(() => (canGoForward.value ? BLACK_COLOR : GRAY_COLOR));
+
+/**
+ * 处理 URL 输入
+ */
+const processUrlInput = (url: string): string => {
+  // 如果已经是完整 URL，直接返回
+  if (url.includes("http://") || url.includes("https://")) {
+    return url;
+  }
+  
+  // 如果是域名格式，添加 https://
+  if (url.includes("www.") || url.includes(".co")) {
+    return `https://${url}`;
+  }
+  
+  // 否则作为搜索关键词
+  return `${BING_SEARCH_URL}${url}`;
+};
+
+/**
+ * 添加历史记录
+ */
+const addHistory = (url: string) => {
+  // 移除当前位置之后的历史记录
+  historyData.value = historyData.value.slice(0, step.value + 1);
+  historyData.value.push(url);
+  step.value++;
+};
+
+/**
+ * 输入完成按回车键触发事件
+ */
 const inputComplete = () => {
-  if (inputValue.value) {
-    inputBarIcon.value = LockClosed20Regular
+  if (!inputValue.value.trim()) return;
+  
+  const processedUrl = processUrlInput(inputValue.value.trim());
+  
+  // 更新输入框显示（如果是自动补全的 URL）
+  if (processedUrl !== inputValue.value) {
+    inputValue.value = processedUrl;
   }
-  if (inputValue.value.indexOf('http://') > -1 || inputValue.value.indexOf('https://') > -1) {
-    historyData.push(inputValue.value)
-    step.value++
-    edgeUrl.value = inputValue.value
-    return
+  
+  // 设置锁图标
+  inputBarIcon.value = LockClosed20Regular;
+  
+  // 添加历史记录并导航
+  addHistory(processedUrl);
+  edgeUrl.value = processedUrl;
+};
+/**
+ * 导航按钮：后退、前进、刷新
+ * @param direction -1=后退, 1=前进, 0=刷新
+ */
+const naviBtn = (direction: NavigationDirection) => {
+  if (direction === 0) {
+    // 刷新：重新加载当前页面
+    edgeUrl.value = historyData.value[step.value];
+    return;
   }
-  if (inputValue.value.indexOf('www.') > -1 || inputValue.value.indexOf('.co') > -1) {
-    edgeUrl.value = inputValue.value = `https://${inputValue.value}`
-    historyData.push(inputValue.value)
-    step.value++
-    return
-  }
-  edgeUrl.value = inputValue.value = `https://cn.bing.com/search?q=${inputValue.value}`
-  historyData.push(inputValue.value)
-  step.value++
-}
-// 前进 / 后退 到底时按钮变灰
-const leftGray = ref('#cccccc')
-const rightGray = ref('#cccccc')
-// 后退、前进、刷新按钮
-const naviBtn = (flag: number) => {
-  if (flag === -1 && step.value === 0) return
-
-  if (flag === 1 && step.value > historyData.length - 1) return
-  step.value += flag
-  edgeUrl.value = historyData[step.value]
-  inputValue.value = historyData[step.value]
-}
-// 监听 step 以控制箭头的颜色
-watch(step, () => {
-  if (step.value === 0) {
-    leftGray.value = '#cccccc'
-    rightGray.value = '#000'
-  }
-  if (step.value === historyData.length - 1) {
-    leftGray.value = '#000'
-    rightGray.value = '#ccc'
-  }
-})
-// 输入框正在输入时
+  
+  const newStep = step.value + direction;
+  
+  // 边界检查
+  if (newStep < 0 || newStep >= historyData.value.length) return;
+  
+  step.value = newStep;
+  const targetUrl = historyData.value[newStep];
+  edgeUrl.value = targetUrl;
+  inputValue.value = targetUrl;
+};
+/**
+ * 输入框正在输入时重置图标
+ */
 const onInput = () => {
-  inputBarIcon.value = Search20Regular
-}
-const edgeBox = ref()
-// 点击窗口时显示在上层
-const edgeFn = async () => {
-  await nextTick()
-  edgeBox.value.style.zIndex = store.zIndex
-  store.changeZIndex()
-}
+  inputBarIcon.value = Search20Regular;
+};
 
+/**
+ * 提升窗口层级
+ */
+const bringToFront = async () => {
+  await nextTick();
+  if (edgeBox.value) {
+    edgeBox.value.style.zIndex = String(store.zIndex);
+    store.changeZIndex();
+  }
+};
+
+// 生命周期钩子
 onMounted(() => {
-  edgeFn()
-})
+  bringToFront();
+  // 注册事件总线监听
+  bus.on("Edge", bringToFront);
+});
 
-
-
-bus.on('Edge', edgeFn)
-
-
+// 组件卸载时清理事件监听
+onUnmounted(() => {
+  bus.off("Edge", bringToFront);
+});
 </script>
 
-<style lang='scss' scoped>
-@import "@/style/public";
+<style lang="scss" scoped>
+@use "@/style/public" as *;
 
 .titleLeft {
   box-sizing: border-box;

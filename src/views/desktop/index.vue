@@ -1,70 +1,97 @@
 <template>
-  <div class="desktop" @click="claseTaskbarAll">
+  <div class="desktop" @click="closeAllTaskbarPopups">
+    <!-- 桌面应用图标 -->
     <div class="desktopAppContainer">
-      <div v-for="item in desktopApp" :key="item.name" class="desktopApp" @dblclick="openApp(item)">
+      <div v-for="item in desktopApps" :key="item.name" class="desktopApp" @dblclick="openApp(item)">
         <img :src="item.url" :alt="item.name" />
         <p>{{ item.name }}</p>
       </div>
     </div>
 
-    <!-- app -->
-    <Edge v-if="edgeStatus.open" v-show="!edgeStatus.hidden" />
-    <Setup v-if="setStatus.open" v-show="!setStatus.hidden" />
-    <TerminalApp v-if="terminalStatus.open" v-show="!terminalStatus.hidden" />
-    <Photo v-if="photoStatus.open" v-show="!photoStatus.hidden" />
-    <Snake v-if="snakeStatus.open" v-show="!snakeStatus.hidden" />
+    <!-- 应用窗口 - 动态渲染 -->
+    <component v-for="app in openedApps" :key="app.name" :is="getAppComponent(app.name)" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import Edge from './app/edge.vue'
-import Setup from '@/views/setUp/index.vue'
-import TerminalApp from './app/terminal.vue'
-import Photo from './app/photo.vue'
-import Snake from './app/snake.vue'
-import { appStore, appItem } from '@/store/app'
-import bus from '@/utils/bus'
+import { computed, type Component } from "vue";
+import { appStore, type appItem } from "@/store/app";
+import bus from "@/utils/bus";
 
-const store = appStore()
-const desktopApp = store.getTypeApp('isDesktop')
+// 导入所有应用组件
+import Edge from "./app/edge.vue";
+import Setup from "@/views/setUp/index.vue";
+import Photo from "./app/photo.vue";
+import Snake from "./app/snake.vue";
+
+const store = appStore();
 
 /**
- * 如果应用为关闭状态 提交 open 为 true
- * 如果应用为最小化状态，此时 open 为 true，mini 为 true，提交 mini 为 fasle
+ * 应用组件映射表
  */
-const openApp = (value: appItem) => {
-  const obj = {
-    name: value.name,
-    key: '',
-    value: false
-  }
-  if (value.mini) {
-    obj.key = 'mini'
-    obj.value = false
-  } else {
-    obj.key = 'open'
-    obj.value = true
-  }
-  store.changeAppStatus(obj)
-}
+const appComponentMap: Record<string, Component> = {
+  Edge: Edge,
+  设置: Setup,
+  照片: Photo,
+  贪吃蛇: Snake,
+};
 
-const edgeStatus = store.getMyApp('Edge')
-const setStatus = store.getMyApp('设置')
-const terminalStatus = store.getMyApp('终端')
-const photoStatus = store.getMyApp('照片')
-const snakeStatus = store.getMyApp('贪吃蛇')
+/**
+ * 获取桌面应用列表
+ */
+const desktopApps = computed(() => store.getTypeApp("isDesktop"));
 
-// 点击桌面时关闭所有任务栏打开的窗口
-const claseTaskbarAll = () => {
-  bus.emit('closeTaskbar')
-}
+/**
+ * 获取已打开且可见的应用列表
+ */
+const openedApps = computed(() => store.getApp.filter((app: appItem) => app.open && !app.hidden));
+
+/**
+ * 根据应用名称获取对应的组件
+ * @param appName 应用名称
+ * @returns 组件或 null
+ */
+const getAppComponent = (appName: string): Component | null => {
+  return appComponentMap[appName] || null;
+};
+
+/**
+ * 打开应用或从最小化状态恢复
+ * @param app 应用项
+ */
+const openApp = (app: appItem) => {
+  if (app.mini) {
+    // 应用处于最小化状态，恢复显示
+    store.changeAppStatus({
+      name: app.name,
+      key: "mini",
+      value: false,
+    });
+  } else if (!app.open) {
+    // 应用未打开，则打开
+    store.changeAppStatus({
+      name: app.name,
+      key: "open",
+      value: true,
+    });
+  }
+  // 如果应用已经打开且未最小化，则不做任何操作（或可以置顶）
+};
+
+/**
+ * 点击桌面时关闭所有任务栏弹窗
+ */
+const closeAllTaskbarPopups = () => {
+  bus.emit("closeTaskbar");
+};
 </script>
 
 <style lang="scss" scoped>
-@import "@/style/public";
+@use "@/style/public" as *;
 
 .desktop {
   position: relative;
+  height: calc(100% - 48px);
 }
 
 .desktopAppContainer {
@@ -109,7 +136,7 @@ const claseTaskbarAll = () => {
   height: 100%;
   background-color: var(--set-bg-color);
   transition: all 100ms ease-in;
-  :deep(.appBody){
+  :deep(.appBody) {
     width: 100%;
     height: calc(100% - 40px);
   }

@@ -5,9 +5,9 @@
         <div class="content">
           <div class="headPic"></div>
           <div class="userName">
-            {{  userName  }}
+            {{ userName }}
           </div>
-          <div :class="{ 'login': status === '登录', 'welcome': status === '欢迎' }">{{  status  }}</div>
+          <div :class="{ login: status === '登录', welcome: status === '欢迎' }">{{ status }}</div>
         </div>
       </div>
     </div>
@@ -15,28 +15,28 @@
 </template>
 
 <script lang="ts" setup>
-import { useRoute, useRouter } from 'vue-router';
-import { ref } from 'vue'
-import { userStore } from '@/store/user'
+import { useRoute, useRouter } from "vue-router";
+import { ref } from "vue";
+import { userStore } from "@/store/user";
 
-const store = userStore()
-const route = useRoute()
-const router = useRouter()
-const status: string = route.query.status ? '登录' : '欢迎'
-const userName = store.getUserName
+const store = userStore();
+const route = useRoute();
+const router = useRouter();
+const status: string = route.query.status ? "登录" : "欢迎";
+const userName = store.getUserName;
 function toHome() {
-  router.push('/home')
+  router.push("/home");
 }
 document.onkeydown = function (e) {
-  if (e.key === 'Enter') {
-    isShow.value = false
+  if (e.key === "Enter") {
+    isShow.value = false;
   }
-}
-const isShow = ref(true)
+};
+const isShow = ref(true);
 </script>
 
 <style lang="scss" scoped>
-@import "@/style/public";
+@use "@/style/public" as *;
 
 @mixin size {
   width: 100%;
@@ -45,7 +45,7 @@ const isShow = ref(true)
 
 .screenBg {
   @include size();
-  background: url("@/assets/wallpaper/login.jpg") no-repeat center/cover;
+  background: url("../../assets/wallpaper/login.jpg") no-repeat center/cover;
 }
 
 .screenContent {
@@ -65,7 +65,7 @@ const isShow = ref(true)
   padding-left: 165px;
   padding-top: 165px;
   border-radius: 50%;
-  background: url("~@/assets/icon/avatar.png") no-repeat center/cover;
+  background: url("../../assets/icon/avatar.png") no-repeat center/cover;
   margin-bottom: 16px;
 }
 
@@ -98,22 +98,22 @@ const isShow = ref(true)
 
   20% {
     transform: translateY(-16%);
-    opacity: .8;
+    opacity: 0.8;
   }
 
   40% {
     transform: translateY(-24%);
-    opacity: .6;
+    opacity: 0.6;
   }
 
   60% {
     transform: translateY(-32%);
-    opacity: .4;
+    opacity: 0.4;
   }
 
   80% {
     transform: translateY(-40%);
-    opacity: .2;
+    opacity: 0.2;
   }
 
   100% {

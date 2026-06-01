@@ -2,19 +2,19 @@
   <div class="menuSearch">
     <!-- 搜索框：点击跳转搜索 -->
     <div class="searchBox" @click.stop="openSearch">
-      <img :src="require('@/assets/icon/systemIcon/search.png')" alt="搜索" />
+      <img :src="searchIcon" alt="搜索" />
       在此键入以搜索
     </div>
   </div>
   <!-- 开始菜单主体 -->
   <div class="menuBody">
     <div class="bodyTitle">
-      <div class="titleLeft">{{  isAllApps ? '所有应用' : '已固定'  }}</div>
+      <div class="titleLeft">{{ isAllApps ? "所有应用" : "已固定" }}</div>
       <div class="titleRight" @click.stop="changeMenuBodyStatus">
         <n-icon v-show="isAllApps">
           <ChevronLeft16Regular />
         </n-icon>
-        <span>{{  isAllApps ? '返回' : '所有应用'  }}</span>
+        <span>{{ isAllApps ? "返回" : "所有应用" }}</span>
         <n-icon v-show="!isAllApps">
           <ChevronRight16Regular />
         </n-icon>
@@ -25,27 +25,27 @@
         <div class="pinnedAppBox">
           <div class="pinnedList" v-for="item in pinnedList" :key="item.name" @click.stop="pinnedOpenApp(item)">
             <img :src="item.url" :alt="item.name" />
-            <span>{{  item.name  }}</span>
+            <span>{{ item.name }}</span>
           </div>
         </div>
         <div class="pinnedRecommend">推荐的项目</div>
         <div class="recommendList">
           <div class="listItem">
-            <img :src="require('@/assets/icon/appIcon/snip.png')" alt="截图工具" />
+            <img :src="snipIcon" alt="截图工具" />
             <div class="itemDesc">
               <div>截图工具</div>
               <span>最近添加</span>
             </div>
           </div>
           <div class="listItem">
-            <img :src="require('@/assets/icon/appIcon/getstarted.png')" alt="欢迎使用 Windows" />
+            <img :src="getstartedIcon" alt="欢迎使用 Windows" />
             <div class="itemDesc">
               <div>入门</div>
               <span>欢迎使用 Windows</span>
             </div>
           </div>
           <div class="listItem">
-            <img :src="require('@/assets/icon/appIcon/visitor.png')" alt="访客数" />
+            <img :src="visitorIcon" alt="访客数" />
             <div class="itemDesc">
               <div>访客数</div>
               <span id="busuanzi_value_site_uv"></span>
@@ -59,12 +59,17 @@
         <transition name="fade">
           <div v-show="!selectLetter" class="appItemBody" ref="appItemBody">
             <div v-for="item in allAppList_sorted" :key="item.id" :id="item.id">
-              <div class="itemBodyPublic itemBodyIndex" @click.stop="selectLetter = true">{{  item.id.toUpperCase()  }}
+              <div class="itemBodyPublic itemBodyIndex" @click.stop="selectLetter = true">
+                {{ item.id.toUpperCase() }}
               </div>
-              <div v-for="app in item.list" :key="app.name" class="itemBodyPublic itemBodyBox"
-                @click.stop="pinnedOpenApp(app)">
+              <div
+                v-for="app in item.list"
+                :key="app.name"
+                class="itemBodyPublic itemBodyBox"
+                @click.stop="pinnedOpenApp(app)"
+              >
                 <img :src="app.url" alt="app.name" />
-                <span>{{  app.name  }}</span>
+                <span>{{ app.name }}</span>
               </div>
             </div>
           </div>
@@ -73,8 +78,14 @@
         <transition name="fade">
           <div v-show="selectLetter" class="appItemLetter">
             <div class="itemLetterBox">
-              <div v-for="item in letterData" :key="item.id + 'l'" :class="{ isFlag: item.flag }"
-                @click="selectThisLetter(item.id, item.flag)">{{  item.id.toUpperCase()  }}</div>
+              <div
+                v-for="item in letterData"
+                :key="item.id + 'l'"
+                :class="{ isFlag: item.flag }"
+                @click="selectThisLetter(item.id, item.flag)"
+              >
+                {{ item.id.toUpperCase() }}
+              </div>
             </div>
           </div>
         </transition>
@@ -84,8 +95,8 @@
   <!-- 底部用户头像和电源按钮 -->
   <div class="menuFooter">
     <div class="footerUser">
-      <img :src="require('@/assets' + userAvatar)" :alt="userName" />
-      <span :title="userName">{{  userName  }}</span>
+      <img :src="userAvatarUrl" :alt="userName" />
+      <span :title="userName">{{ userName }}</span>
     </div>
     <div class="footerBattery">
       <div class="batterySet" title="设置" @click="openSet">
@@ -124,175 +135,230 @@
   </div>
 </template>
 
-<script lang='ts' setup>
-import { ref, toRaw, nextTick, onMounted } from 'vue'
-import { NPopover, NIcon } from 'naive-ui'
-import { Settings20Regular, Power24Regular, WeatherMoon48Regular, ArrowCounterclockwise28Regular, ChevronRight16Regular, ChevronLeft16Regular } from '@vicons/fluent'
-import { useRouter } from 'vue-router'
-import bus from '@/utils/bus'
-import { getSpell } from 'jian-pinyin'
-import { userStore } from '@/store/user'
-import { appStore, appItem, appList } from '@/store/app'
-import { storeToRefs } from 'pinia'
-const router = useRouter()
+<script lang="ts" setup>
+import { ref, toRaw, nextTick, onMounted, computed } from "vue";
+import { NPopover, NIcon } from "naive-ui";
+import {
+  Settings20Regular,
+  Power24Regular,
+  WeatherMoon48Regular,
+  ArrowCounterclockwise28Regular,
+  ChevronRight16Regular,
+  ChevronLeft16Regular,
+} from "@vicons/fluent";
+import { useRouter } from "vue-router";
+import bus from "@/utils/bus";
+import { getSpell } from "jian-pinyin";
+import { userStore } from "@/store/user";
+import { appStore, type appItem, type appList, type statusObjType } from "@/store/app";
+import { storeToRefs } from "pinia";
 
-const uStore = userStore()
-const aStore = appStore()
+const router = useRouter();
 
-const { userAvatar, userName } = storeToRefs(uStore)
+// 图标资源
+const searchIcon = new URL("@/assets/icon/systemIcon/search.png", import.meta.url).href;
+const snipIcon = new URL("@/assets/icon/appIcon/snip.png", import.meta.url).href;
+const getstartedIcon = new URL("@/assets/icon/appIcon/getstarted.png", import.meta.url).href;
+const visitorIcon = new URL("@/assets/icon/appIcon/visitor.png", import.meta.url).href;
+
+// Store
+const uStore = userStore();
+const aStore = appStore();
+const { userAvatar, userName } = storeToRefs(uStore);
+
+// 计算用户头像路径
+const userAvatarUrl = computed(() => {
+ return new URL(`../../../assets/icon/${userAvatar.value}.png`, import.meta.url).href
+});
 
 // popover 层级
-const zIndex = 9999
-const powerEvent = (val: string) => {
-  if (val === '关机') {
-    console.log('会加的，再等等')
-    return
-  }
-  if (val === '睡眠') {
-    router.push('login')
-    return
-  }
-  if (val === '重启') {
-    console.log('会加的，再等等')
-    return
-  }
+const zIndex = 9999;
+
+// 事件发射
+const emits = defineEmits(["pleaseOpenSearch"]);
+
+// 类型定义
+interface LetterType {
+  id: string;
+  flag: boolean;
 }
+
+interface AllAppListBySort {
+  id: string;
+  list: appList;
+}
+
+// 状态管理
+const isAllApps = ref(false);
+const selectLetter = ref(false);
+const containerPinned = ref<HTMLElement | null>(null);
+const containerAllApp = ref<HTMLElement | null>(null);
+const appItemBody = ref<HTMLElement | null>(null);
+let maxScroll = 0;
+
+// 电源事件处理
+const powerEvent = (val: string) => {
+  const actions: Record<string, () => void> = {
+    "关机": () => console.log("会加的，再等等"),
+    "睡眠": () => router.push("login"),
+    "重启": () => console.log("会加的，再等等"),
+  };
+  
+  actions[val]?.();
+};
+
 // 打开设置
 const openSet = () => {
-  const closeMini = {
-    name: '设置',
-    key: 'mini',
-    value: false
-  }
-  const obj = {
-    name: '设置',
-    key: 'open',
-    value: true
-  }
-  aStore.changeAppStatus(closeMini)
-  aStore.changeAppStatus(obj)
-  bus.emit('closeTaskbar')
-  bus.emit('设置')
-}
+  aStore.changeAppStatus({
+    name: "设置",
+    key: "mini",
+    value: false,
+  } as statusObjType);
 
-const emits = defineEmits(['pleaseOpenSearch'])
+  aStore.changeAppStatus({
+    name: "设置",
+    key: "open",
+    value: true,
+  } as statusObjType);
+
+  bus.emit("closeTaskbar");
+  bus.emit("设置");
+};
+
 // 跳转搜索框
 const openSearch = () => {
-  emits('pleaseOpenSearch')
-}
-const isAllApps = ref(false)
-// 应用列表 ---------------------------------
-// [{
-//   id: #,
-//   list: [{}]
-// }]
-interface letterType {
-  id: string,
-  flag: boolean
-}
-const selectThisLetter = async (id: string, flag: boolean) => {
-  if (!flag) return
-  selectLetter.value = false
-  await nextTick()
-  const ele: HTMLElement | null = document.querySelector(`#${id}`)
-  containerAllApp.value.scrollTop = (ele as HTMLElement).offsetTop > maxScroll ? maxScroll : (ele as HTMLElement).offsetTop
-}
-const strIndex = '#abcdefghijklmnopqrstuvwxyz'
-const letterData: letterType[] = []
+  emits("pleaseOpenSearch");
+};
 
-interface allAppListBySort {
-  id: string,
-  list: appList
-}
-let allAppList_sorted: allAppListBySort[] = []
+// 首字母选择处理
+const selectThisLetter = async (id: string, flag: boolean) => {
+  if (!flag || !containerAllApp.value) return;
+  
+  selectLetter.value = false;
+  await nextTick();
+  
+  const ele = document.querySelector(`#${id}`) as HTMLElement;
+  if (ele) {
+    const scrollTop = ele.offsetTop > maxScroll ? maxScroll : ele.offsetTop;
+    containerAllApp.value.scrollTop = scrollTop;
+  }
+};
+
+// 应用列表数据处理
+const strIndex = "#abcdefghijklmnopqrstuvwxyz";
+const letterData: LetterType[] = [];
+let allAppList_sorted: AllAppListBySort[] = [];
+
+// 初始化字母数据
+const initLetterData = () => {
+  for (const value of strIndex) {
+    allAppList_sorted.push({
+      id: value,
+      list: [],
+    });
+    letterData.push({
+      id: value,
+      flag: false,
+    });
+  }
+};
+
+// 数据处理：按首字母分类应用
+const dataDeal = () => {
+  const app = aStore.getApp;
+  
+  // 清空之前的数据
+  allAppList_sorted.forEach(item => {
+    item.list = [];
+  });
+  letterData.forEach(item => {
+    item.flag = false;
+  });
+  
+  // 数据归类
+  const rawApp = toRaw(app);
+  allAppList_sorted.forEach((item, index) => {
+    rawApp.forEach((appItem) => {
+      const firstLetter = getSpell(
+        appItem.name,
+        (spell: string) => spell[1],
+        ""
+      ).slice(0, 1).toLowerCase();
+      
+      if (item.id === firstLetter) {
+        item.list.push(appItem);
+        letterData[index].flag = true;
+      }
+    });
+  });
+  
+  // 过滤 & 排序
+  allAppList_sorted = allAppList_sorted
+    .filter((item) => item.list.length > 0)
+    .map((item) => {
+      item.list.sort((a, b) => a.name.localeCompare(b.name));
+      return item;
+    });
+};
+
 // DOM加载完成后获取 appItemBody 的高度
 onMounted(() => {
-  maxScroll = appItemBody.value.scrollHeight - 523
-})
-for (const value of strIndex) {
-  allAppList_sorted.push({
-    id: value,
-    list: []
-  })
-  letterData.push({
-    id: value,
-    flag: false
-  })
-}
-const dataDeal = () => {
-  // 应用列表是固定的，所有取消代理
-  // const noProxyData = toRaw(app)
-  // 应用名称统一转为拼音
-  // const transData = noProxyData.map((item)=>{
-  //   item.name = 
-  //   return item
-  // })
-  const app = aStore.getApp
-  // 数据归类
-  allAppList_sorted.forEach((item, index) => {
-    toRaw(app).forEach(iten => {
-      if (item.id === getSpell(iten.name, (charactor: string, spell: string) => spell[1], '').slice(0, 1).toLowerCase()) {
-        item.list.push(iten)
-        letterData[index].flag = true
-      }
-    })
-  })
-  // 过滤 & 排序
-  allAppList_sorted = allAppList_sorted.filter(item => item.list.length > 0).map(item => {
-    item.list.sort((a, b) => a.name.localeCompare(b.name))
-    return item
-  })
-}
-dataDeal()
-// 所有应用和已固定处理 --------------------------
-const containerPinned = ref()
-const containerAllApp = ref()
-const appItemBody = ref()
-let maxScroll = 0
-const changeMenuBodyStatus = () => {
-  if (isAllApps.value) {
-    isAllApps.value = false
-    containerPinned.value.style.left = 0
-    containerAllApp.value.style.left = '110%'
-    selectLetter.value = false
-    return
+  initLetterData();
+  dataDeal();
+  
+  if (appItemBody.value) {
+    maxScroll = appItemBody.value.scrollHeight - 523;
   }
-  isAllApps.value = true
-  containerPinned.value.style.left = '-110%'
-  containerAllApp.value.style.left = 0
-}
-const selectLetter = ref(false)
+});
+
+// 所有应用和已固定处理
+const changeMenuBodyStatus = () => {
+  if (!containerPinned.value || !containerAllApp.value) return;
+  
+  if (isAllApps.value) {
+    isAllApps.value = false;
+    containerPinned.value.style.left = "0";
+    containerAllApp.value.style.left = "110%";
+    selectLetter.value = false;
+  } else {
+    isAllApps.value = true;
+    containerPinned.value.style.left = "-110%";
+    containerAllApp.value.style.left = "0";
+  }
+};
+
+// 打开应用
 const pinnedOpenApp = (data: appItem) => {
   if (!data.open) {
     aStore.changeAppStatus({
       name: data.name,
-      key: 'open',
-      value: true
-    })
+      key: "open",
+      value: true,
+    });
   } else {
     if (data.mini) {
       aStore.changeAppStatus({
         name: data.name,
-        key: 'mini',
-        value: false
-      })
+        key: "mini",
+        value: false,
+      });
       aStore.changeAppStatus({
         name: data.name,
-        key: 'hidden',
-        value: false
-      })
+        key: "hidden",
+        value: false,
+      });
     }
   }
-  bus.emit('closeTaskbar')
-  bus.emit(data.name)
-}
-// 获取固定应用列表 -----------------------
-const pinnedList = aStore.getTypeApp('isPinned')
+  
+  bus.emit("closeTaskbar");
+  bus.emit(data.name);
+};
+
+// 获取固定应用列表
+const pinnedList = aStore.getTypeApp("isPinned");
 </script>
 
-<style lang='scss' scoped>
-@import "@/style/public";
-
+<style lang="scss" scoped>
 @mixin bgHover {
   border-radius: 5px;
   background-color: inherit;
@@ -413,7 +479,7 @@ const pinnedList = aStore.getTypeApp('isPinned')
 }
 
 @at-root .poperBody {
-  >div {
+  > div {
     @include flex(center, center);
     user-select: none;
 
@@ -428,7 +494,6 @@ const pinnedList = aStore.getTypeApp('isPinned')
     margin-right: 12px;
   }
 }
-
 
 // 开始菜单主体
 .containerPinned {

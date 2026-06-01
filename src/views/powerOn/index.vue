@@ -17,21 +17,58 @@
   </div>
 </template>
 
-<script lang='ts' setup>
-import { useRouter } from 'vue-router'
+<script lang="ts" setup>
+import { useRouter } from "vue-router";
+import { onUnmounted } from "vue";
+import loginImage from "@/assets/wallpaper/login.jpg";
 
-const router = useRouter()
+const router = useRouter();
+let img: HTMLImageElement | null = null;
+let timeoutId: number | null = null;
+
 function isLoaded() {
-  const img = new Image
-  img.src = require('@/assets/wallpaper/login.jpg')
-  img.onload = () => {
-    router.push('/login')
+  img = new Image();
+  img.src = loginImage;
+
+  const handleLoad = () => {
+    cleanup();
+    router.push("/login");
+  };
+
+  const handleError = () => {
+    cleanup();
+    router.push("/login");
+  };
+
+  img.onload = handleLoad;
+  img.onerror = handleError;
+
+  timeoutId = window.setTimeout(() => {
+    cleanup();
+    router.push("/login");
+  }, 10000);
+}
+
+function cleanup() {
+  if (timeoutId !== null) {
+    clearTimeout(timeoutId);
+    timeoutId = null;
+  }
+  if (img) {
+    img.onload = null;
+    img.onerror = null;
+    img = null;
   }
 }
-isLoaded()
+
+onUnmounted(() => {
+  cleanup();
+});
+
+isLoaded();
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .powerOn {
   box-sizing: border-box;
   width: 100%;
@@ -54,10 +91,9 @@ isLoaded()
 }
 
 .loading i {
-  margin: auto;
   position: absolute;
-  top: calc(50% - 40px);
-  left: calc(50% - 40px);
+  top: calc(50% - 17px);
+  left: calc(50% - 17px);
   width: 34px;
   height: 34px;
   display: block;

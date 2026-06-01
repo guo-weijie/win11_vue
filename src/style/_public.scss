@@ -1,3 +1,5 @@
+@use "sass:math";
+
 @mixin flex($j, $a: center, $d: row, $fw: nowrap) {
   display: flex;
   justify-content: $j;
@@ -10,7 +12,7 @@
 @mixin mini_font($size) {
   font-size: 12px;
   -webkit-transform-origin-x: 0;
-  -webkit-transform: scale($size/12);
+  -webkit-transform: scale(math.div($size, 12));
 }
 
 @mixin grid($col, $row) {

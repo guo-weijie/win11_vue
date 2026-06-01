@@ -1,215 +1,264 @@
-import { h, defineComponent, onMounted, resolveDirective, withDirectives, Directive } from 'vue'
-import { appStore } from '@/store/app'
-import './style.scss'
-import { Subtract16Regular, Dismiss20Regular, SquareMultiple16Regular } from '@vicons/fluent'
-import { NButton, NIcon, NPopover } from 'naive-ui'
+import { h, defineComponent, onMounted, resolveDirective, withDirectives, type Directive, type VNode } from "vue";
+import { appStore, type statusObjType } from "@/store/app";
+import "./style.scss";
+import { Subtract16Regular, Dismiss20Regular, SquareMultiple16Regular } from "@vicons/fluent";
+import { NButton, NIcon, NPopover } from "naive-ui";
+
+// 类型定义
+interface WindowSizeChild {
+  id: string;
+  class?: string;
+}
+
+interface WindowSizeItem {
+  class: string;
+  children: WindowSizeChild[];
+}
+
+interface ButtonConfig {
+  type: string;
+  icon: any;
+  title: string;
+}
 
 export default defineComponent({
+  name: "TitleBlock",
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
-    bgColor: String
+    bgColor: {
+      type: String,
+      default: "",
+    },
   },
   setup(props, { slots }) {
-    const store = appStore()
-    /**
-     * 获取父实例
-     */
-    let parentInstance: HTMLElement
+    const store = appStore();
+    
+    // 父元素引用
+    let parentInstance: HTMLElement | null = null;
+    
     onMounted(() => {
-      parentInstance = (document.querySelector('.titleBlock') as HTMLElement).parentElement as HTMLElement
-    })
-    /**
-     * 生成标题栏右侧
-     */
-    interface children {
-      id: string,
-      class?: string
-    }
-    interface windowSizeItem {
-      class: string,
-      children: children[]
-    }
+      const titleBlockEl = document.querySelector(".titleBlock") as HTMLElement;
+      if (titleBlockEl) {
+        parentInstance = titleBlockEl.parentElement;
+      }
+    });
 
-    const windowSizeObj: windowSizeItem[] = [
+    // 窗口尺寸配置
+    const windowSizeObj: WindowSizeItem[] = [
       {
-        class: 'item1',
-        children: [
-          { id: 'halfOnLeft' }, { id: 'halfOnRight' }
-        ]
-      }, {
-        class: 'item2',
-        children: [
-          { id: 'moreOnLeft' }, { id: 'moreOnRight' }
-        ]
-      }, {
-        class: 'item3',
-        children: [
-          { id: 'thirdOnLeft' }, { id: 'thirdOnCenter' }, { id: 'thirdOnRight' }
-        ]
-      }, {
-        class: 'item4',
-        children: [
-          { id: 'halfOnLeft', class: 'item4A' }, { id: 'thirdOnTop' }, { id: 'thirdOnBottom' }
-        ]
-      }, {
-        class: 'item5',
-        children: [
-          { id: 'quarterOnLeftTop' }, { id: 'thirdOnTop' }, { id: 'quarterOnLeftBottom' }, { id: 'thirdOnBottom' }
-        ]
-      }, {
-        class: 'item6',
-        children: [
-          { id: 'moreThirdLeft' }, { id: 'moreThirdCenter' }, { id: 'moreThirdRight' }
-        ]
+        class: "item1",
+        children: [{ id: "halfOnLeft" }, { id: "halfOnRight" }],
       },
-    ]
+      {
+        class: "item2",
+        children: [{ id: "moreOnLeft" }, { id: "moreOnRight" }],
+      },
+      {
+        class: "item3",
+        children: [{ id: "thirdOnLeft" }, { id: "thirdOnCenter" }, { id: "thirdOnRight" }],
+      },
+      {
+        class: "item4",
+        children: [{ id: "halfOnLeft", class: "item4A" }, { id: "thirdOnTop" }, { id: "thirdOnBottom" }],
+      },
+      {
+        class: "item5",
+        children: [
+          { id: "quarterOnLeftTop" },
+          { id: "thirdOnTop" },
+          { id: "quarterOnLeftBottom" },
+          { id: "thirdOnBottom" },
+        ],
+      },
+      {
+        class: "item6",
+        children: [{ id: "moreThirdLeft" }, { id: "moreThirdCenter" }, { id: "moreThirdRight" }],
+      },
+    ];
 
     // 右侧按钮点击事件
     const rightBtn = (value?: string) => {
-      if (value === 'mini') {
+      if (!parentInstance) return;
+      
+      if (value === "mini") {
         store.changeAppStatus({
           name: props.title,
-          key: 'hidden',
-          value: true
-        })
+          key: "hidden",
+          value: true,
+        } as statusObjType);
         store.changeAppStatus({
           name: props.title,
-          key: 'mini',
-          value: true
-        })
-      } else if (value === 'close') {
+          key: "mini",
+          value: true,
+        } as statusObjType);
+      } else if (value === "close") {
         store.changeAppStatus({
           name: props.title,
-          key: 'open',
-          value: false
-        })
+          key: "open",
+          value: false,
+        } as statusObjType);
       } else {
-        parentInstance.style.left = ''
-        parentInstance.style.top = ''
-        if (parentInstance.className === 'appContainer') {
-          parentInstance.className = 'appContainer centerCenter'
-        } else {
-          parentInstance.className = 'appContainer'
-        }
+        // 最大化/还原
+        parentInstance.style.left = "";
+        parentInstance.style.top = "";
+        parentInstance.className = parentInstance.className === "appContainer"
+          ? "appContainer centerCenter"
+          : "appContainer";
       }
-    }
+    };
 
-    // 窗口点击事件
+    // 窗口尺寸切换
     const changeWinSize = (className: string) => {
-      parentInstance.style.left = ''
-      parentInstance.style.top = ''
-      parentInstance.className = `appContainer ${className}`
-    }
-    /**
-     * 创建调整窗口尺寸的节点
-     */
-    // 二级
-    function createSecondStepSize(data: children[]) {
-      return data.map(item => {
-        return h('div', {
-          class: item.class ? item.class : '',
+      if (!parentInstance) return;
+      
+      parentInstance.style.left = "";
+      parentInstance.style.top = "";
+      parentInstance.className = `appContainer ${className}`;
+    };
+
+    // 创建二级窗口尺寸节点
+    const createSecondStepSize = (data: WindowSizeChild[]): VNode[] => {
+      return data.map((item) =>
+        h("div", {
+          class: item.class || "",
           id: item.id,
-          onClick: () => changeWinSize(item.id)
+          onClick: () => changeWinSize(item.id),
         })
-      })
-    }
-    // 一级
-    function createWinSize() {
-      return windowSizeObj.map(item => {
-        return h('div', {
-          class: item.class
-        }, createSecondStepSize(item.children))
-      })
-    }
-    /**
-     * 创建右侧三个按钮 即最小化、窗口、关闭
-     */
-    function createRight() {
-      const ary = [{
-        type: 'mini',
-        icon: Subtract16Regular,
-        title: '最小化'
-      }, {
-        type: 'win',
-        icon: SquareMultiple16Regular,
-        title: '向下还原'
-      }, {
-        type: 'close',
-        icon: Dismiss20Regular,
-        title: '关闭'
-      }]
-      const btn = ary.map(item => {
-        const btn = h(NButton, {
-          style: {
-            width: '40px',
-            height: '40px',
-            fontSize: '18px'
-          },
-          class: {
-            closeBtn: item.type === 'close',
-            otherBtn: item.type !== 'close'
-          },
-          size: 'tiny',
-          title: item.title,
-          bordered: false,
-          onClick: event => {
-            event.stopPropagation()
-            rightBtn(item.type)
-          },
-          text: true
-        }, () => h(NIcon, null, () => h(item.icon)))
+      );
+    };
 
-        if (item.type === 'win') {
-          return h(NPopover, {
-            trigger: 'hover',
-            class: 'myPopover',
-            style: {
-              padding: '8px'
-            },
-            'show-arrow': false
-          }, {
-            trigger: () => btn,
-            default: () => h('div', {
-              class: 'winBox'
-            }, createWinSize())
-          })
-        }
-        return btn
-      })
-      return h('div', {
-        class: 'btnBox'
-      }, btn)
-    }
+    // 创建一级窗口尺寸节点
+    const createWinSize = (): VNode[] => {
+      return windowSizeObj.map((item) =>
+        h(
+          "div",
+          {
+            class: item.class,
+          },
+          createSecondStepSize(item.children)
+        )
+      );
+    };
 
-    /**
-     * 创建左侧标题
-     */
-    function createLeft() {
-      if (slots.default) {
-        return slots.default()
-      }
-      // 没有插槽的节点
-      return h('div', {
-        class: 'titleBlockLeft'
-      }, props.title)
-    }
-
-    return () => {
-      const dragable = resolveDirective('drag')
-      return withDirectives(h('div', {
-        style: {
-          backgroundColor: props.bgColor ? props.bgColor : '--global-bg-color'
+    // 创建右侧按钮
+    const createRight = (): VNode => {
+      const buttons: ButtonConfig[] = [
+        {
+          type: "mini",
+          icon: Subtract16Regular,
+          title: "最小化",
         },
-        class: 'titleBlock',
-        onDblclick: () => rightBtn()
-      }, [
-        createLeft(),
-        createRight()
-      ]
-      ), [[dragable as Directive]])
-    }
-  }
-})
+        {
+          type: "win",
+          icon: SquareMultiple16Regular,
+          title: "向下还原",
+        },
+        {
+          type: "close",
+          icon: Dismiss20Regular,
+          title: "关闭",
+        },
+      ];
+
+      const btnNodes = buttons.map((item): VNode => {
+        const button = h(
+          NButton,
+          {
+            style: {
+              width: "40px",
+              height: "40px",
+              fontSize: "18px",
+            },
+            class: {
+              closeBtn: item.type === "close",
+              otherBtn: item.type !== "close",
+            },
+            size: "tiny",
+            title: item.title,
+            bordered: false,
+            onClick: (event: MouseEvent) => {
+              event.stopPropagation();
+              rightBtn(item.type);
+            },
+            text: true,
+          },
+          () => h(NIcon, null, () => h(item.icon))
+        );
+
+        // 窗口按钮需要包裹在 Popover 中
+        if (item.type === "win") {
+          return h(
+            NPopover,
+            {
+              trigger: "hover",
+              class: "myPopover",
+              style: {
+                padding: "8px",
+              },
+              showArrow: false,
+            },
+            {
+              trigger: () => button,
+              default: () =>
+                h(
+                  "div",
+                  {
+                    class: "winBox",
+                  },
+                  createWinSize()
+                ),
+            }
+          );
+        }
+
+        return button;
+      });
+
+      return h(
+        "div",
+        {
+          class: "btnBox",
+        },
+        btnNodes
+      );
+    };
+
+    // 创建左侧标题
+    const createLeft = (): VNode | VNode[] => {
+      if (slots.default) {
+        return slots.default();
+      }
+      
+      return h(
+        "div",
+        {
+          class: "titleBlockLeft",
+        },
+        props.title
+      );
+    };
+
+    // 渲染函数
+    return () => {
+      const dragable = resolveDirective("drag");
+      
+      return withDirectives(
+        h(
+          "div",
+          {
+            style: {
+              backgroundColor: props.bgColor || "var(--global-bg-color)",
+            },
+            class: "titleBlock",
+            onDblclick: () => rightBtn(),
+          },
+          [createLeft(), createRight()]
+        ),
+        [[dragable as Directive]]
+      );
+    };
+  },
+});

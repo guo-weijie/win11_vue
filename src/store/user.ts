@@ -1,52 +1,49 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
 interface stateType {
-  userName: string,
-  userAvatar: string,
-  backgroundImgUrl: string,
-  theme: string
+  userName: string;
+  userAvatar: string;
+  backgroundImgUrl: string;
+  theme: string;
 }
 
-const userStore = defineStore({
-  id: 'user-store',
+const userStore = defineStore("user-store", {
   state: (): stateType => {
     return {
-      userName: 'Ghosie',
-      userAvatar: '/icon/avatar.png',
-      backgroundImgUrl: '/default/img0.jpg',
-      theme: 'default'
-    }
+      userName: "Ghosie",
+      userAvatar: "avatar",
+      backgroundImgUrl: "/default/img0.jpg",
+      theme: "default",
+    };
   },
   getters: {
     getUserName(): string {
-      return this.userName
+      return this.userName;
     },
     getUserAvatar(): string {
-      return this.userAvatar
+      return this.userAvatar;
     },
     getBackgroundImgUrl(): string {
-      return this.backgroundImgUrl
+      return this.backgroundImgUrl;
     },
     getTheme(): string {
-      return this.theme
-    }
+      return this.theme;
+    },
   },
   actions: {
     changeUserName(userName: string) {
-      this.userName = userName
+      this.userName = userName;
     },
     changeUserAvatar(url: string) {
-      this.userAvatar = url
+      this.userAvatar = url;
     },
     changeBackgroundImgUrl(url: string) {
-      this.backgroundImgUrl = url
+      this.backgroundImgUrl = url;
     },
     changeTheme(name: string) {
-      this.theme = name
-    }
-  }
-})
+      this.theme = name;
+    },
+  },
+});
 
-export {
-  userStore
-}
+export { userStore };
