@@ -1,18 +1,20 @@
 <template>
   <div class="powerOn">
-    <img
-      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQAAQMAAABF07nAAAAABlBMVEUAAAAAeNjKiRDXAAAAAXRSTlMAQObYZgAAAfhJREFUeNrt1zEVACAMxcDPwzjScFYWFHTqcFFwayJJkiRJkiRJkiRJkn67Wp1kVasbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEmSJEmSNGTPAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACRJkiRJkiRJkiRJ0gP8tfuwwWeYiQAAAABJRU5ErkJggg=="
-      alt="windows11 logo"
-    />
-    <div class="loading">
-      <i>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </i>
+    <div class="content">
+      <img
+        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQAAQMAAABF07nAAAAABlBMVEUAAAAAeNjKiRDXAAAAAXRSTlMAQObYZgAAAfhJREFUeNrt1zEVACAMxcDPwzjScFYWFHTqcFFwayJJkiRJkiRJkiRJkn67Wp1kVasbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEmSJEmSNGTPAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACRJkiRJkiRJkiRJ0gP8tfuwwWeYiQAAAABJRU5ErkJggg=="
+        alt="windows11 logo"
+      />
+      <div class="loading">
+        <i>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </i>
+      </div>
     </div>
   </div>
 </template>
@@ -20,15 +22,17 @@
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
 import { onUnmounted } from "vue";
-import loginImage from "@/assets/wallpaper/login.jpg";
 
 const router = useRouter();
 let img: HTMLImageElement | null = null;
 let timeoutId: number | null = null;
 
 function isLoaded() {
+  // 使用 public 目录中的图片，避免 Vite 预加载
+  const loginImagePath = "/assets/wallpaper/login.jpg";
+  
   img = new Image();
-  img.src = loginImage;
+  img.src = loginImagePath;
 
   const handleLoad = () => {
     cleanup();
@@ -74,19 +78,26 @@ isLoaded();
   width: 100%;
   height: 100%;
   background-color: #000000;
-  padding-top: 300px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
   img {
     width: 136px;
     height: 136px;
-    margin-bottom: 285px;
+    margin-bottom: 50px;
   }
 }
+
 .loading {
   width: 34px;
   height: 34px;
-  margin-left: 50%;
-  transform: translateX(-50%);
   position: relative;
 }
 

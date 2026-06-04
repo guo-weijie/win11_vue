@@ -6,7 +6,11 @@
   bottom: 65px !important;
 }
 
-.app[data-theme='default']{
+#app{
+  height: 100vh;
+}
+
+.home-container[data-theme='default']{
   /*
    * 全局
    */
