@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="photoBox" @click.stop="photoFn">
+  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
     <TitleBlock title="照片" bgColor="#e6e6e6"></TitleBlock>
     <n-tabs type="line" v-model:value="photoType" @update:value="typeChange" :bar-width="16" :tabs-padding="16">
       <n-tab v-for="item in typeList" :key="item.value" :name="item.value">{{ item.label }}</n-tab>
@@ -48,10 +48,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, nextTick, reactive, type Ref, onMounted } from "vue";
-import { appStore } from "@/store/app";
-import bus from "@/utils/bus";
+import { ref, reactive, type Ref, onMounted } from "vue";
 import TitleBlock from "@/components/titleBlock";
+import { useWindow } from "@/composables/useWindow";
 import { NTabs, NTab, NImageGroup, NSpace, NImage, NIcon, NButton, NBackTop, NSpin, type ButtonType } from "naive-ui";
 import { Square16Regular, BorderAll24Regular, Table28Regular } from "@vicons/fluent";
 
@@ -60,20 +59,8 @@ interface PhotoItem {
   imgurl: string;
 }
 
-const store = appStore();
-const photoBox = ref();
-const photoFn = async () => {
-  await nextTick();
-  photoBox.value.style.zIndex = store.zIndex;
-  store.changeZIndex();
-  // 同步更新 isTop 状态
-  store.changeAppStatus({
-    name: "照片",
-    key: "isTop",
-    value: true,
-  });
-};
-bus.on("照片", photoFn);
+// 窗口管理 composable
+const { windowRef, bringToFront } = useWindow("照片");
 const typeList = [
   { label: "美女模特", value: "6" },
   { label: "爱情美图", value: "30" },
@@ -108,8 +95,7 @@ const photoListBox = ref();
 const show = ref(false);
 let photoListBoxHeight: number;
 let scrollEleHeight: number;
-onMounted(async () => {
-  await photoFn();
+onMounted(() => {
   photoListBoxHeight = photoListBox.value.clientHeight;
   photoListBox.value.addEventListener("scroll", function () {
     if (show.value) return;

@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="setupBox" @click.stop="setupFn">
+  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
     <!-- 标题栏 -->
     <TitleBlock title="设置"></TitleBlock>
     <!-- 主体 -->
@@ -170,15 +170,13 @@ import {
   Cut20Regular,
 } from "@vicons/fluent";
 // import NavBarRight from '@/components/navBarRight/index.vue'
-import { reactive, ref, shallowReactive, nextTick, onMounted } from "vue";
+import { reactive, ref, shallowReactive } from "vue";
 import MenuItemList from "./components/menuItemList.vue";
-import bus from "@/utils/bus";
+import { useWindow } from "@/composables/useWindow";
 import { userStore } from "@/store/user";
-import { appStore } from "@/store/app";
 import TitleBlock from "@/components/titleBlock";
 
 const uStore = userStore();
-const aStore = appStore();
 const userAvatar = uStore.getUserAvatar;
 const userName = uStore.getUserName;
 
@@ -918,26 +916,8 @@ const selectItem = (name: string, num: number) => {
   menuItemListData.data = menuItemData[num];
 };
 
-// 修改样式
-const setupBox = ref();
-
-const setupFn = async () => {
-  await nextTick();
-  setupBox.value.style.zIndex = aStore.zIndex;
-  aStore.changeZIndex();
-  // 同步更新 isTop 状态
-  aStore.changeAppStatus({
-    name: "设置",
-    key: "isTop",
-    value: true,
-  });
-};
-
-onMounted(() => {
-  setupFn();
-});
-
-bus.on("设置", setupFn);
+// 窗口管理 composable
+const { windowRef, bringToFront } = useWindow("设置");
 </script>
 
 <style lang="scss" scoped>

@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="edgeBox" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
     <!-- 标题栏 -->
     <TitleBlock title="Edge" bgColor="#cdcdcd">
       <div class="titleLeft">
@@ -69,16 +69,15 @@ import {
   Dismiss20Filled,
 } from "@vicons/fluent";
 import { NIcon, NButton, NInput } from "naive-ui";
-import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted } from "vue";
-import bus from "@/utils/bus";
-import { appStore } from "@/store/app";
+import { ref, shallowRef, computed } from "vue";
 import TitleBlock from "@/components/titleBlock";
+import { useWindow } from "@/composables/useWindow";
 
 // 类型定义
 type NavigationDirection = -1 | 0 | 1;
 
-// Store 实例
-const store = appStore();
+// 窗口管理 composable
+const { windowRef, bringToFront } = useWindow("Edge");
 
 // 常量定义
 const DEFAULT_URL = "https://keep-silent.com";
@@ -99,8 +98,6 @@ const edgeUrl = ref(DEFAULT_URL);
 // 用户输入的值
 const inputValue = ref(DEFAULT_URL);
 
-// Edge 容器引用
-const edgeBox = ref<HTMLElement | null>(null);
 // 计算属性：判断是否可以后退/前进
 const canGoBack = computed(() => step.value > 0);
 const canGoForward = computed(() => step.value < historyData.value.length - 1);
@@ -184,35 +181,6 @@ const naviBtn = (direction: NavigationDirection) => {
 const onInput = () => {
   inputBarIcon.value = Search20Regular;
 };
-
-/**
- * 提升窗口层级
- */
-const bringToFront = async () => {
-  await nextTick();
-  if (edgeBox.value) {
-    edgeBox.value.style.zIndex = String(store.zIndex);
-    store.changeZIndex();
-    // 同步更新 isTop 状态
-    store.changeAppStatus({
-      name: "Edge",
-      key: "isTop",
-      value: true,
-    });
-  }
-};
-
-// 生命周期钩子
-onMounted(() => {
-  bringToFront();
-  // 注册事件总线监听
-  bus.on("Edge", bringToFront);
-});
-
-// 组件卸载时清理事件监听
-onUnmounted(() => {
-  bus.off("Edge", bringToFront);
-});
 </script>
 
 <style lang="scss" scoped>

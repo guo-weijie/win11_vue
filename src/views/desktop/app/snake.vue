@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="snakeBox" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
     <TitleBlock title="贪吃蛇"></TitleBlock>
     <div class="appBody game">
       <div class="gameBody" ref="gameBody">
@@ -85,6 +85,7 @@
 <script lang="ts" setup>
 import TitleBlock from "@/components/titleBlock";
 import { onMounted, reactive, ref, onUnmounted, nextTick } from "vue";
+import { useWindow } from "@/composables/useWindow";
 import { NSwitch, NIcon, NButton, NModal } from "naive-ui";
 import {
   ChevronLeft16Regular,
@@ -95,8 +96,6 @@ import {
   Pause16Regular,
   ArrowReset20Regular,
 } from "@vicons/fluent";
-import { appStore } from "@/store/app";
-import bus from "@/utils/bus";
 
 // ============ 类型定义 ============
 type Direction = "left" | "right" | "top" | "bottom";
@@ -143,11 +142,10 @@ const KEY_DIRECTION_MAP: KeyMap = {
 const VALID_KEYS = Object.keys(KEY_DIRECTION_MAP);
 
 // ============ 响应式状态 ============
-// Store 实例
-const store = appStore();
+// 窗口管理 composable
+const { windowRef, bringToFront } = useWindow("贪吃蛇");
 
 // 游戏容器引用
-const snakeBox = ref<HTMLElement | null>(null);
 const gameBody = ref<HTMLElement | null>(null);
 
 // 游戏状态
@@ -485,23 +483,6 @@ const initGame = () => {
   resetGame();
 };
 
-/**
- * 提升窗口层级到最前
- */
-const bringToFront = async () => {
-  await nextTick();
-  if (snakeBox.value) {
-    snakeBox.value.style.zIndex = String(store.zIndex);
-    store.changeZIndex();
-    // 同步更新 isTop 状态
-    store.changeAppStatus({
-      name: "贪吃蛇",
-      key: "isTop",
-      value: true,
-    });
-  }
-};
-
 // ============ 生命周期钩子 ============
 
 // ResizeObserver 监听窗口大小变化
@@ -512,18 +493,12 @@ const resizeObserver = new ResizeObserver(() => {
 });
 
 onMounted(() => {
-  // 提升窗口层级
-  bringToFront();
-  
-  // 注册事件总线监听
-  bus.on("贪吃蛇", bringToFront);
-  
   createGrid();
   generateApple();
   
   // 监听窗口大小变化
-  if (snakeBox.value) {
-    resizeObserver.observe(snakeBox.value);
+  if (windowRef.value) {
+    resizeObserver.observe(windowRef.value);
   }
   
   // 注册键盘事件
@@ -540,8 +515,8 @@ onUnmounted(() => {
   // 移除键盘事件
   document.removeEventListener("keydown", handleKeyPress);
   
-  // 清理事件总线监听
-  bus.off("贪吃蛇", bringToFront);
+  // 清理 ResizeObserver
+  resizeObserver.disconnect();
 });
 </script>
 
