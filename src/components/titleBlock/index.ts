@@ -1,4 +1,4 @@
-import { h, defineComponent, onMounted, ref, resolveDirective, withDirectives, type Directive, type VNode } from "vue";
+import { h, defineComponent, onMounted, ref, resolveDirective, withDirectives, type Directive, type VNode, type Ref } from "vue";
 import { appStore, type statusObjType } from "@/store/app";
 import "./style.scss";
 import { Subtract16Regular, Dismiss20Regular, SquareMultiple16Regular } from "@vicons/fluent";
@@ -50,10 +50,25 @@ export default defineComponent({
     // 窗口尺寸面板显示状态
     const showWinSizePanel = ref(false);
     
+    // 标题栏元素引用
+    const titleBlockRef: Ref<HTMLElement | null> = ref(null);
+    
     onMounted(() => {
-      const titleBlockEl = document.querySelector(".titleBlock") as HTMLElement;
-      parentInstance = titleBlockEl?.parentElement || null;
+      // 通过 ref 获取当前组件实例的标题栏元素
+      if (titleBlockRef.value) {
+        parentInstance = titleBlockRef.value.parentElement;
+      }
     });
+
+    // 提升窗口层级到最前
+    const bringToFront = () => {
+      if (!parentInstance) return;
+      
+      // 获取当前最高 z-index 并累加
+      const currentZIndex = store.zIndex;
+      parentInstance.style.zIndex = String(currentZIndex);
+      store.changeZIndex();
+    };
 
     // 窗口尺寸配置
     const windowSizeObj: WindowSizeItem[] = [
@@ -273,11 +288,16 @@ export default defineComponent({
         h(
           "div",
           {
+            ref: titleBlockRef,
             style: {
               backgroundColor: props.bgColor || "var(--global-bg-color)",
             },
             class: "titleBlock",
             onDblclick: () => rightBtn(),
+            onClick: () => {
+              // 点击标题栏时提升窗口层级
+              bringToFront();
+            },
           },
           [
             // 左侧标题区域

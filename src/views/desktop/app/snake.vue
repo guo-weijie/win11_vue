@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="snakeBox">
+  <div class="appContainer" ref="snakeBox" @click.stop="bringToFront">
     <TitleBlock title="贪吃蛇"></TitleBlock>
     <div class="appBody game">
       <div class="gameBody" ref="gameBody">
@@ -95,6 +95,7 @@ import {
   Pause16Regular,
   ArrowReset20Regular,
 } from "@vicons/fluent";
+import { appStore } from "@/store/app";
 
 // ============ 类型定义 ============
 type Direction = "left" | "right" | "top" | "bottom";
@@ -141,6 +142,9 @@ const KEY_DIRECTION_MAP: KeyMap = {
 const VALID_KEYS = Object.keys(KEY_DIRECTION_MAP);
 
 // ============ 响应式状态 ============
+// Store 实例
+const store = appStore();
+
 // 游戏容器引用
 const snakeBox = ref<HTMLElement | null>(null);
 const gameBody = ref<HTMLElement | null>(null);
@@ -480,6 +484,17 @@ const initGame = () => {
   resetGame();
 };
 
+/**
+ * 提升窗口层级到最前
+ */
+const bringToFront = async () => {
+  await nextTick();
+  if (snakeBox.value) {
+    snakeBox.value.style.zIndex = String(store.zIndex);
+    store.changeZIndex();
+  }
+};
+
 // ============ 生命周期钩子 ============
 
 // ResizeObserver 监听窗口大小变化
@@ -490,6 +505,9 @@ const resizeObserver = new ResizeObserver(() => {
 });
 
 onMounted(() => {
+  // 提升窗口层级
+  bringToFront();
+  
   createGrid();
   generateApple();
   
