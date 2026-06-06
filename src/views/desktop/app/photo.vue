@@ -60,6 +60,7 @@ interface PhotoItem {
 }
 
 // 窗口管理 composable
+// @ts-ignore
 const { windowRef, bringToFront } = useWindow("照片");
 const typeList = [
   { label: "美女模特", value: "6" },

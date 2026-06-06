@@ -77,6 +77,7 @@ import { useWindow } from "@/composables/useWindow";
 type NavigationDirection = -1 | 0 | 1;
 
 // 窗口管理 composable
+// @ts-ignore
 const { windowRef, bringToFront } = useWindow("Edge");
 
 // 常量定义
@@ -114,12 +115,12 @@ const processUrlInput = (url: string): string => {
   if (url.includes("http://") || url.includes("https://")) {
     return url;
   }
-  
+
   // 如果是域名格式，添加 https://
   if (url.includes("www.") || url.includes(".co")) {
     return `https://${url}`;
   }
-  
+
   // 否则作为搜索关键词
   return `${BING_SEARCH_URL}${url}`;
 };
@@ -139,17 +140,17 @@ const addHistory = (url: string) => {
  */
 const inputComplete = () => {
   if (!inputValue.value.trim()) return;
-  
+
   const processedUrl = processUrlInput(inputValue.value.trim());
-  
+
   // 更新输入框显示（如果是自动补全的 URL）
   if (processedUrl !== inputValue.value) {
     inputValue.value = processedUrl;
   }
-  
+
   // 设置锁图标
   inputBarIcon.value = LockClosed20Regular;
-  
+
   // 添加历史记录并导航
   addHistory(processedUrl);
   edgeUrl.value = processedUrl;
@@ -164,12 +165,12 @@ const naviBtn = (direction: NavigationDirection) => {
     edgeUrl.value = historyData.value[step.value];
     return;
   }
-  
+
   const newStep = step.value + direction;
-  
+
   // 边界检查
   if (newStep < 0 || newStep >= historyData.value.length) return;
-  
+
   step.value = newStep;
   const targetUrl = historyData.value[newStep];
   edgeUrl.value = targetUrl;

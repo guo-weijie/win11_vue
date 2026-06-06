@@ -917,6 +917,7 @@ const selectItem = (name: string, num: number) => {
 };
 
 // 窗口管理 composable
+// @ts-ignore
 const { windowRef, bringToFront } = useWindow("设置");
 </script>
 
