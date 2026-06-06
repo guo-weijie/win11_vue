@@ -3,8 +3,8 @@
     <div class="screenBg" v-show="isShow">
       <div class="screenContent" @click="isShow = false">
         <div class="content">
-          <div class="headPic"></div>
-          <div class="userName">
+          <div class="headPic" :style="{ backgroundImage: `url(${userAvatarUrl})` }"></div>
+          <div class="userName" :title="userName">
             {{ userName }}
           </div>
           <div :class="{ login: status === '登录', welcome: status === '欢迎' }">{{ status }}</div>
@@ -16,17 +16,23 @@
 
 <script lang="ts" setup>
 import { useRoute, useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref,computed } from "vue";
 import { userStore } from "@/store/user";
+import { storeToRefs } from "pinia";
 
 const store = userStore();
 const route = useRoute();
 const router = useRouter();
 const status: string = route.query.status ? "登录" : "欢迎";
-const userName = store.getUserName;
+const { userAvatar, userName } = storeToRefs(store);
 function toHome() {
   router.push("/home");
 }
+
+const userAvatarUrl = computed(() => {
+  return new URL(`../../assets/icon/${userAvatar.value}.png`, import.meta.url).href;
+});
+
 document.onkeydown = function (e) {
   if (e.key === "Enter") {
     isShow.value = false;
@@ -65,7 +71,7 @@ const isShow = ref(true);
   padding-left: 165px;
   padding-top: 165px;
   border-radius: 50%;
-  background: url("../../assets/icon/avatar.png") no-repeat center/cover;
+  background: url("../../assets/icon/defAccount.png") no-repeat center/cover;
   margin-bottom: 16px;
 }
 

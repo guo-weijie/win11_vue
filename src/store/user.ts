@@ -10,8 +10,8 @@ interface stateType {
 const userStore = defineStore("user-store", {
   state: (): stateType => {
     return {
-      userName: "Ghosie",
-      userAvatar: "avatar",
+      userName: "Administrator",
+      userAvatar: "defAccount",
       backgroundImgUrl: "/default/img0.jpg",
       theme: "default",
     };
