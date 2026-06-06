@@ -10,7 +10,7 @@
         <!-- 有下划线应用 -->
         <div v-for="item in underLineApp" :key="item.name" @click.stop="taskBarLeftHaveLine(item)">
           <img :src="item.url" alt="item.name" v-click-animal />
-          <i class="underLine" :class="{ fullLine: item.open, shortLine: item.mini }"></i>
+          <i class="underLine" :class="{ fullLine: item.isTop && item.open, shortLine: item.open && !item.isTop }"></i>
         </div>
       </div>
       <!-- 任务栏右侧 -->
@@ -237,6 +237,12 @@ const handleAppClick = (item: appItem) => {
       key: "mini",
       value: false,
     });
+    // 显式设置为置顶，确保下划线状态同步
+    store.changeAppStatus({
+      name: item.name,
+      key: "isTop",
+      value: true,
+    });
     bus.emit(item.name);
   } else if (item.isTop) {
     // 应用在最顶层且可见，则最小化
@@ -250,8 +256,29 @@ const handleAppClick = (item: appItem) => {
       key: "mini",
       value: true,
     });
+    // 确保 isTop 为 false
+    store.changeAppStatus({
+      name: item.name,
+      key: "isTop",
+      value: false,
+    });
   } else {
-    // 应用已打开但未在顶层，则带到最前
+    // 应用已打开但未在顶层，则带到最前，并同步更新 isTop 状态
+    store.changeAppStatus({
+      name: item.name,
+      key: "isTop",
+      value: true,
+    });
+    // 将其他已打开应用设为非置顶
+    underLineApp.value.forEach((other: appItem) => {
+      if (other.name !== item.name && other.open && other.isTop) {
+        store.changeAppStatus({
+          name: other.name,
+          key: "isTop",
+          value: false,
+        });
+      }
+    });
     bus.emit(item.name);
   }
 };

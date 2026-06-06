@@ -193,6 +193,12 @@ const bringToFront = async () => {
   if (edgeBox.value) {
     edgeBox.value.style.zIndex = String(store.zIndex);
     store.changeZIndex();
+    // 同步更新 isTop 状态
+    store.changeAppStatus({
+      name: "Edge",
+      key: "isTop",
+      value: true,
+    });
   }
 };
 

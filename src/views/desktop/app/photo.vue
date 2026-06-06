@@ -66,6 +66,12 @@ const photoFn = async () => {
   await nextTick();
   photoBox.value.style.zIndex = store.zIndex;
   store.changeZIndex();
+  // 同步更新 isTop 状态
+  store.changeAppStatus({
+    name: "照片",
+    key: "isTop",
+    value: true,
+  });
 };
 bus.on("照片", photoFn);
 const typeList = [

@@ -925,6 +925,12 @@ const setupFn = async () => {
   await nextTick();
   setupBox.value.style.zIndex = aStore.zIndex;
   aStore.changeZIndex();
+  // 同步更新 isTop 状态
+  aStore.changeAppStatus({
+    name: "设置",
+    key: "isTop",
+    value: true,
+  });
 };
 
 onMounted(() => {

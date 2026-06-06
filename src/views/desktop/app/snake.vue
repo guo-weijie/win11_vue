@@ -493,6 +493,12 @@ const bringToFront = async () => {
   if (snakeBox.value) {
     snakeBox.value.style.zIndex = String(store.zIndex);
     store.changeZIndex();
+    // 同步更新 isTop 状态
+    store.changeAppStatus({
+      name: "贪吃蛇",
+      key: "isTop",
+      value: true,
+    });
   }
 };
 

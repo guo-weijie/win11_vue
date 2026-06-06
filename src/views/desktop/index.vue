@@ -61,21 +61,37 @@ const getAppComponent = (appName: string): Component | null => {
  */
 const openApp = (app: appItem) => {
   if (app.mini) {
-    // 应用处于最小化状态，恢复显示
+    // 应用处于最小化状态，恢复显示并置顶
+    store.changeAppStatus({
+      name: app.name,
+      key: "hidden",
+      value: false,
+    });
     store.changeAppStatus({
       name: app.name,
       key: "mini",
       value: false,
     });
+    store.changeAppStatus({
+      name: app.name,
+      key: "isTop",
+      value: true,
+    });
   } else if (!app.open) {
-    // 应用未打开，则打开
+    // 应用未打开，则打开（openApp 内部已设置 isTop=true）
     store.changeAppStatus({
       name: app.name,
       key: "open",
       value: true,
     });
+  } else if (!app.isTop) {
+    // 应用已打开但不在顶层，则置顶
+    store.changeAppStatus({
+      name: app.name,
+      key: "isTop",
+      value: true,
+    });
   }
-  // 如果应用已经打开且未最小化，则不做任何操作（或可以置顶）
 };
 
 /**

@@ -293,11 +293,31 @@ export const appStore = defineStore("app-store", {
     },
     
     /**
-     * 处理其他状态变化（mini, hidden 等）
+     * 处理其他状态变化（mini, hidden, isTop 等）
      */
     handleOtherStateChange(targetApp: AppItem) {
-      // 重新计算 isTop：如果既没有最小化也没有隐藏，则是顶层
-      targetApp.isTop = !targetApp.mini && !targetApp.hidden;
+      if (targetApp.isTop) {
+        // 当前应用被设为置顶，将其他已打开应用设为非置顶
+        this.app.forEach((item) => {
+          if (item.name !== targetApp.name && item.open) {
+            item.isTop = false;
+          }
+        });
+      } else {
+        // 重新计算 isTop：如果既没有最小化也没有隐藏，则是顶层
+        const newIsTop = !targetApp.mini && !targetApp.hidden;
+        if (newIsTop !== targetApp.isTop) {
+          targetApp.isTop = newIsTop;
+          // 如果变为置顶，其他应用需要设为非置顶
+          if (newIsTop) {
+            this.app.forEach((item) => {
+              if (item.name !== targetApp.name && item.open) {
+                item.isTop = false;
+              }
+            });
+          }
+        }
+      }
     },
   },
 });

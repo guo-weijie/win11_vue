@@ -68,6 +68,13 @@ export default defineComponent({
       const currentZIndex = store.zIndex;
       parentInstance.style.zIndex = String(currentZIndex);
       store.changeZIndex();
+      
+      // 同步更新 isTop 状态，确保任务栏下划线正确显示
+      store.changeAppStatus({
+        name: props.title,
+        key: "isTop",
+        value: true,
+      } as statusObjType);
     };
 
     // 窗口尺寸配置
@@ -131,6 +138,8 @@ export default defineComponent({
         parentInstance.className = parentInstance.className === "appContainer"
           ? "appContainer centerCenter"
           : "appContainer";
+        // 关闭窗口尺寸悬浮面板
+        showWinSizePanel.value = false;
       }
     };
 
