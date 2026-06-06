@@ -225,38 +225,33 @@ const handleAppClick = (item: appItem) => {
       value: true,
     });
     bus.emit(item.name);
-  } else if (item.isTop) {
-    // 应用在最顶层，则最小化并隐藏
+  } else if (item.hidden || item.mini) {
+    // 应用已打开但被隐藏或最小化，则还原显示并带到最前
     store.changeAppStatus({
       name: item.name,
       key: "hidden",
-      value: true,
+      value: false,
     });
-    store.changeAppStatus({
-      name: item.name,
-      key: "mini",
-      value: true,
-    });
-  } else if (!item.hidden) {
-    // 应用显示中但未在顶层，则最小化
     store.changeAppStatus({
       name: item.name,
       key: "mini",
       value: false,
     });
     bus.emit(item.name);
-  } else {
-    // 应用隐藏中，则还原显示
+  } else if (item.isTop) {
+    // 应用在最顶层且可见，则最小化
     store.changeAppStatus({
       name: item.name,
       key: "hidden",
-      value: false,
+      value: true,
     });
     store.changeAppStatus({
       name: item.name,
       key: "mini",
-      value: false,
+      value: true,
     });
+  } else {
+    // 应用已打开但未在顶层，则带到最前
     bus.emit(item.name);
   }
 };

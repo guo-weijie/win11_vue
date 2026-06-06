@@ -96,6 +96,7 @@ import {
   ArrowReset20Regular,
 } from "@vicons/fluent";
 import { appStore } from "@/store/app";
+import bus from "@/utils/bus";
 
 // ============ 类型定义 ============
 type Direction = "left" | "right" | "top" | "bottom";
@@ -508,6 +509,9 @@ onMounted(() => {
   // 提升窗口层级
   bringToFront();
   
+  // 注册事件总线监听
+  bus.on("贪吃蛇", bringToFront);
+  
   createGrid();
   generateApple();
   
@@ -529,6 +533,9 @@ onUnmounted(() => {
   
   // 移除键盘事件
   document.removeEventListener("keydown", handleKeyPress);
+  
+  // 清理事件总线监听
+  bus.off("贪吃蛇", bringToFront);
 });
 </script>
 
