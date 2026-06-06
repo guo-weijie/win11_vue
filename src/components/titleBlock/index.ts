@@ -1,8 +1,8 @@
-import { h, defineComponent, onMounted, resolveDirective, withDirectives, type Directive, type VNode } from "vue";
+import { h, defineComponent, onMounted, ref, resolveDirective, withDirectives, type Directive, type VNode } from "vue";
 import { appStore, type statusObjType } from "@/store/app";
 import "./style.scss";
 import { Subtract16Regular, Dismiss20Regular, SquareMultiple16Regular } from "@vicons/fluent";
-import { NButton, NIcon, NPopover } from "naive-ui";
+import { NButton, NIcon } from "naive-ui";
 
 // 类型定义
 interface WindowSizeChild {
@@ -38,6 +38,9 @@ export default defineComponent({
     
     // 父元素引用
     let parentInstance: HTMLElement | null = null;
+    
+    // 窗口尺寸面板显示状态
+    const showWinSizePanel = ref(false);
     
     onMounted(() => {
       const titleBlockEl = document.querySelector(".titleBlock") as HTMLElement;
@@ -117,6 +120,9 @@ export default defineComponent({
       parentInstance.style.left = "";
       parentInstance.style.top = "";
       parentInstance.className = `appContainer ${className}`;
+      
+      // 点击后关闭面板
+      showWinSizePanel.value = false;
     };
 
     // 创建二级窗口尺寸节点
@@ -188,29 +194,18 @@ export default defineComponent({
           () => h(NIcon, null, () => h(item.icon))
         );
 
-        // 窗口按钮需要包裹在 Popover 中
+        // 窗口按钮 - 使用自定义面板代替 Popover
         if (item.type === "win") {
           return h(
-            NPopover,
+            "div",
             {
-              trigger: "hover",
-              class: "myPopover",
-              style: {
-                padding: "8px",
+              class: "winButtonWrapper",
+              style: { position: "relative" },
+              onMouseenter: () => {
+                showWinSizePanel.value = true;
               },
-              showArrow: false,
             },
-            {
-              trigger: () => button,
-              default: () =>
-                h(
-                  "div",
-                  {
-                    class: "winBox",
-                  },
-                  createWinSize()
-                ),
-            }
+            button
           );
         }
 
@@ -222,7 +217,34 @@ export default defineComponent({
         {
           class: "btnBox",
         },
-        btnNodes
+        [
+          ...btnNodes,
+          // 将面板放在 btnBox 内部最后
+          h(
+            "div",
+            {
+              class: "winSizePanel",
+              style: {
+                visibility: showWinSizePanel.value ? "visible" : "hidden",
+                opacity: showWinSizePanel.value ? 1 : 0,
+                pointerEvents: showWinSizePanel.value ? "auto" : "none",
+              },
+              onMouseenter: () => {
+                // 鼠标进入面板时保持显示
+                showWinSizePanel.value = true;
+              },
+              onMouseleave: (event: MouseEvent) => {
+                // 只有真正离开面板时才关闭
+                const panel = event.currentTarget as HTMLElement;
+                const relatedTarget = event.relatedTarget as HTMLElement;
+                if (!panel.contains(relatedTarget)) {
+                  showWinSizePanel.value = false;
+                }
+              },
+            },
+            createWinSize()
+          )
+        ]
       );
     };
 
