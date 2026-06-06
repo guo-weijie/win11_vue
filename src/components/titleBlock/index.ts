@@ -4,7 +4,15 @@ import "./style.scss";
 import { Subtract16Regular, Dismiss20Regular, SquareMultiple16Regular } from "@vicons/fluent";
 import { NButton, NIcon } from "naive-ui";
 
-// 类型定义
+// ==================== 常量定义 ====================
+// 按钮类型常量
+const BUTTON_TYPE = {
+  MINIMIZE: "mini",
+  WINDOW: "win",
+  CLOSE: "close",
+} as const;
+
+// ==================== 类型定义 ====================
 interface WindowSizeChild {
   id: string;
   class?: string;
@@ -44,9 +52,7 @@ export default defineComponent({
     
     onMounted(() => {
       const titleBlockEl = document.querySelector(".titleBlock") as HTMLElement;
-      if (titleBlockEl) {
-        parentInstance = titleBlockEl.parentElement;
-      }
+      parentInstance = titleBlockEl?.parentElement || null;
     });
 
     // 窗口尺寸配置
@@ -131,7 +137,9 @@ export default defineComponent({
         h("div", {
           class: item.class || "",
           id: item.id,
-          onClick: () => changeWinSize(item.id),
+          onClick: () => {
+            changeWinSize(item.id);
+          },
         })
       );
     };
@@ -151,6 +159,7 @@ export default defineComponent({
 
     // 创建右侧按钮
     const createRight = (): VNode => {
+      // 按钮配置列表
       const buttons: ButtonConfig[] = [
         {
           type: "mini",
@@ -170,32 +179,35 @@ export default defineComponent({
       ];
 
       const btnNodes = buttons.map((item): VNode => {
+        // 按钮通用配置
+        const buttonProps = {
+          style: {
+            width: "40px",
+            height: "40px",
+            fontSize: "18px",
+          },
+          class: {
+            closeBtn: item.type === BUTTON_TYPE.CLOSE,
+            otherBtn: item.type !== BUTTON_TYPE.CLOSE,
+          },
+          size: "tiny" as const,
+          title: item.title,
+          bordered: false,
+          text: true,
+          onClick: (event: MouseEvent) => {
+            event.stopPropagation();
+            rightBtn(item.type);
+          },
+        };
+        
         const button = h(
           NButton,
-          {
-            style: {
-              width: "40px",
-              height: "40px",
-              fontSize: "18px",
-            },
-            class: {
-              closeBtn: item.type === "close",
-              otherBtn: item.type !== "close",
-            },
-            size: "tiny",
-            title: item.title,
-            bordered: false,
-            onClick: (event: MouseEvent) => {
-              event.stopPropagation();
-              rightBtn(item.type);
-            },
-            text: true,
-          },
+          buttonProps,
           () => h(NIcon, null, () => h(item.icon))
         );
 
         // 窗口按钮 - 使用自定义面板代替 Popover
-        if (item.type === "win") {
+        if (item.type === BUTTON_TYPE.WINDOW) {
           return h(
             "div",
             {
@@ -219,47 +231,37 @@ export default defineComponent({
         },
         [
           ...btnNodes,
-          // 将面板放在 btnBox 内部最后
-          h(
-            "div",
-            {
-              class: "winSizePanel",
-              style: {
-                visibility: showWinSizePanel.value ? "visible" : "hidden",
-                opacity: showWinSizePanel.value ? 1 : 0,
-                pointerEvents: showWinSizePanel.value ? "auto" : "none",
-              },
-              onMouseenter: () => {
-                // 鼠标进入面板时保持显示
-                showWinSizePanel.value = true;
-              },
-              onMouseleave: (event: MouseEvent) => {
-                // 只有真正离开面板时才关闭
-                const panel = event.currentTarget as HTMLElement;
-                const relatedTarget = event.relatedTarget as HTMLElement;
-                if (!panel.contains(relatedTarget)) {
-                  showWinSizePanel.value = false;
-                }
-              },
-            },
-            createWinSize()
-          )
+          createWinSizePanel()
         ]
       );
     };
 
-    // 创建左侧标题
-    const createLeft = (): VNode | VNode[] => {
-      if (slots.default) {
-        return slots.default();
-      }
-      
+    // 创建窗口尺寸面板
+    const createWinSizePanel = (): VNode => {
       return h(
         "div",
         {
-          class: "titleBlockLeft",
+          class: "winSizePanel",
+          style: {
+            visibility: showWinSizePanel.value ? "visible" : "hidden",
+            opacity: showWinSizePanel.value ? 1 : 0,
+            pointerEvents: showWinSizePanel.value ? "auto" : "none",
+            transition: "opacity 0.15s ease-in-out",
+          },
+          onMouseenter: () => {
+            // 鼠标进入面板时保持显示
+            showWinSizePanel.value = true;
+          },
+          onMouseleave: (event: MouseEvent) => {
+            // 只有真正离开面板时才关闭
+            const panel = event.currentTarget as HTMLElement;
+            const relatedTarget = event.relatedTarget as HTMLElement;
+            if (!panel.contains(relatedTarget)) {
+              showWinSizePanel.value = false;
+            }
+          },
         },
-        props.title
+        createWinSize()
       );
     };
 
@@ -277,7 +279,12 @@ export default defineComponent({
             class: "titleBlock",
             onDblclick: () => rightBtn(),
           },
-          [createLeft(), createRight()]
+          [
+            // 左侧标题区域
+            slots.default ? slots.default() : h("div", { class: "titleBlockLeft" }, props.title),
+            // 右侧按钮区域
+            createRight(),
+          ]
         ),
         [[dragable as Directive]]
       );
