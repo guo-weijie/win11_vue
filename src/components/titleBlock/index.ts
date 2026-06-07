@@ -115,11 +115,7 @@ export default defineComponent({
       if (!parentInstance) return;
       
       if (value === "mini") {
-        store.changeAppStatus({
-          name: props.title,
-          key: "hidden",
-          value: true,
-        } as statusObjType);
+        // 最小化：设置 mini=true，handleMiniStateChange 会自动取消置顶并提升下一个应用
         store.changeAppStatus({
           name: props.title,
           key: "mini",

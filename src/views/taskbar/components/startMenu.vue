@@ -338,15 +338,10 @@ const pinnedOpenApp = (app: AppItem) => {
       value: true,
     } as StatusObjType);
   } else if (app.mini) {
+    // 应用最小化时点击：恢复显示，handleMiniStateChange 会自动置顶
     aStore.changeAppStatus({
       name: app.name,
       key: "mini",
-      value: false,
-    } as StatusObjType);
-    
-    aStore.changeAppStatus({
-      name: app.name,
-      key: "hidden",
       value: false,
     } as StatusObjType);
   }
