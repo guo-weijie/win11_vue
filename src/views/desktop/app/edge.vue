@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
     <!-- 标题栏 -->
     <TitleBlock title="Edge" bgColor="#cdcdcd">
       <div class="titleLeft">
@@ -78,7 +78,7 @@ type NavigationDirection = -1 | 0 | 1;
 
 // 窗口管理 composable
 // @ts-ignore
-const { windowRef, bringToFront } = useWindow("Edge");
+const { windowRef, bringToFront, isHidden } = useWindow("Edge");
 
 // 常量定义
 const DEFAULT_URL = "https://keep-silent.com";

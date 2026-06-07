@@ -7,10 +7,14 @@ export interface AppItem {
   isDesktop: boolean;
   isPinned: boolean;
   isTaskBar: boolean;
+  /** 应用是否打开（true=DOM存在，false=销毁） */
   open: boolean;
+  /** 应用是否隐藏（true=display:none，false=显示） */
   mini: boolean;
-  hidden: boolean;
+  /** 应用是否在最顶层 */
   isTop: boolean;
+  /** 应用窗口的 z-index 层级 */
+  zIndex: number;
 }
 
 type AppList = AppItem[];
@@ -47,10 +51,9 @@ import snakeIcon from "@/assets/icon/appIcon/snake.jpg";
  * - isDesktop: 是否在桌面显示
  * - isPinned: 是否固定在开始菜单
  * - isTaskBar: 是否固定在任务栏
- * - open: 是否为打开状态（组件是否加载 v-if，是否显示任务栏图标长下划线）
- * - mini: 是否显示任务栏图标短下划线（最小化状态）
- * - hidden: 是否隐藏（v-show，应用最小化在任务栏的状态）
- * - isTop: 应用是否在最顶层显示（处理多个应用时任务栏图标下划线和层级问题）
+ * - open: 应用是否打开（true=组件挂载，false=销毁）
+ * - mini: 应用是否隐藏（true=display:none，false=显示，DOM保留）
+ * - isTop: 应用是否在最顶层（影响任务栏下划线样式和层级）
  */
 
 // 默认应用列表
@@ -63,8 +66,8 @@ const defaultApps: AppList = [
     isTaskBar: true,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "Edge",
@@ -74,8 +77,8 @@ const defaultApps: AppList = [
     isTaskBar: true,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "Microsoft Store",
@@ -85,8 +88,8 @@ const defaultApps: AppList = [
     isTaskBar: true,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "照片",
@@ -96,8 +99,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "设置",
@@ -107,8 +110,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "时钟",
@@ -118,8 +121,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "回收站",
@@ -129,8 +132,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "cortana",
@@ -140,8 +143,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "Visual Studio Code",
@@ -151,8 +154,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "终端",
@@ -162,8 +165,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
   {
     name: "贪吃蛇",
@@ -173,8 +176,8 @@ const defaultApps: AppList = [
     isTaskBar: false,
     open: false,
     mini: false,
-    hidden: false,
     isTop: false,
+    zIndex: 0,
   },
 ];
 
@@ -234,12 +237,13 @@ export const appStore = defineStore("app-store", {
       // 更新状态
       (targetApp as any)[key] = value;
       
-      // 处理 open 状态变化
+      // 根据变更的 key 分发处理
       if (key === "open") {
         this.handleOpenStateChange(targetApp, name, value);
-      } else {
-        // 处理其他状态变化
-        this.handleOtherStateChange(targetApp);
+      } else if (key === "mini") {
+        this.handleMiniStateChange(targetApp, value);
+      } else if (key === "isTop") {
+        this.handleIsTopStateChange(targetApp, value);
       }
     },
     
@@ -257,67 +261,95 @@ export const appStore = defineStore("app-store", {
     },
     
     /**
-     * 打开应用
+     * 处理 mini 状态变化
+     * @param targetApp 目标应用
+     * @param isMini true=最小化（隐藏），false=最大化（显示）
+     */
+    handleMiniStateChange(targetApp: AppItem, isMini: boolean) {
+      if (isMini) {
+        // 最小化：取消置顶，找到其他已打开且未隐藏应用中 z-index 最大的，置顶
+        targetApp.isTop = false;
+        this.promoteNextTopApp(targetApp.name);
+      } else {
+        // 最大化（mini 从 true 变为 false）：应用应当置顶
+        targetApp.isTop = true;
+        // 将其他已打开应用设为非置顶
+        this.app.forEach((item) => {
+          if (item.name !== targetApp.name && item.open) {
+            item.isTop = false;
+          }
+        });
+      }
+    },
+    
+    /**
+     * 处理 isTop 状态变化
+     */
+    handleIsTopStateChange(targetApp: AppItem, isTop: boolean) {
+      if (isTop) {
+        // 置顶：将其他已打开应用设为非置顶
+        this.app.forEach((item) => {
+          if (item.name !== targetApp.name && item.open) {
+            item.isTop = false;
+          }
+        });
+      }
+    },
+    
+    /**
+     * 找到其他已打开且未隐藏应用中 z-index 最大的，将其置顶
+     * @param excludeName 排除的应用名称
+     */
+    promoteNextTopApp(excludeName: string) {
+      const candidates = this.app.filter(
+        (item) => item.name !== excludeName && item.open && !item.mini,
+      );
+      if (candidates.length === 0) return;
+      
+      let maxApp = candidates[0];
+      for (let i = 1; i < candidates.length; i++) {
+        if (candidates[i].zIndex > maxApp.zIndex) {
+          maxApp = candidates[i];
+        }
+      }
+      maxApp.isTop = true;
+    },
+    
+    /**
+     * 打开应用：置顶、取消隐藏、将其他应用设为非置顶
      */
     openApp(targetApp: AppItem, name: string) {
       targetApp.isTop = true;
       targetApp.mini = false;
-      targetApp.hidden = false;
       
       // 如果不是常驻任务栏应用，则显示任务栏图标
       if (!this.alwaysTaskBar.includes(name)) {
         targetApp.isTaskBar = true;
       }
       
-      // 将其他已打开的应用设置为非置顶并最小化
+      // 将其他已打开的应用设置为非置顶（但不隐藏）
       this.app.forEach((item) => {
         if (item.name !== name && item.open) {
           item.isTop = false;
-          item.mini = true;
         }
       });
     },
     
     /**
-     * 关闭应用
+     * 关闭应用：重置所有状态
      */
     closeApp(targetApp: AppItem, name: string) {
       targetApp.isTop = false;
       targetApp.mini = false;
-      targetApp.hidden = false;
+      targetApp.zIndex = 0;
       
       // 如果不是常驻任务栏应用，则隐藏任务栏图标
       if (!this.alwaysTaskBar.includes(name)) {
         targetApp.isTaskBar = false;
       }
-    },
-    
-    /**
-     * 处理其他状态变化（mini, hidden, isTop 等）
-     */
-    handleOtherStateChange(targetApp: AppItem) {
-      if (targetApp.isTop) {
-        // 当前应用被设为置顶，将其他已打开应用设为非置顶
-        this.app.forEach((item) => {
-          if (item.name !== targetApp.name && item.open) {
-            item.isTop = false;
-          }
-        });
-      } else {
-        // 重新计算 isTop：如果既没有最小化也没有隐藏，则是顶层
-        const newIsTop = !targetApp.mini && !targetApp.hidden;
-        if (newIsTop !== targetApp.isTop) {
-          targetApp.isTop = newIsTop;
-          // 如果变为置顶，其他应用需要设为非置顶
-          if (newIsTop) {
-            this.app.forEach((item) => {
-              if (item.name !== targetApp.name && item.open) {
-                item.isTop = false;
-              }
-            });
-          }
-        }
-      }
+      
+      // 将其他已打开且未隐藏应用中 z-index 最大的置顶
+      this.promoteNextTopApp(name);
     },
   },
 });

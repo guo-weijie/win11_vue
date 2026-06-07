@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
     <!-- 标题栏 -->
     <TitleBlock title="设置"></TitleBlock>
     <!-- 主体 -->
@@ -918,7 +918,7 @@ const selectItem = (name: string, num: number) => {
 
 // 窗口管理 composable
 // @ts-ignore
-const { windowRef, bringToFront } = useWindow("设置");
+const { windowRef, bringToFront, isHidden } = useWindow("设置");
 </script>
 
 <style lang="scss" scoped>

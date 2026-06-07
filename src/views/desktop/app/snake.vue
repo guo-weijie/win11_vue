@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
     <TitleBlock title="贪吃蛇"></TitleBlock>
     <div class="appBody game">
       <div class="gameBody" ref="gameBody">
@@ -143,7 +143,7 @@ const VALID_KEYS = Object.keys(KEY_DIRECTION_MAP);
 
 // ============ 响应式状态 ============
 // 窗口管理 composable
-const { windowRef, bringToFront } = useWindow("贪吃蛇");
+const { windowRef, bringToFront, isHidden } = useWindow("贪吃蛇");
 
 // 游戏容器引用
 const gameBody = ref<HTMLElement | null>(null);
@@ -376,9 +376,8 @@ const generateApple = () => {
     attempts++;
   }
   
-  // 如果找不到空位，说明已经填满
+  // 如果找不到空位，说明已经填满（通关）
   showGameOver(`恭喜通关，分数：${snake.length - 1}`);
-  resetGame();
 };
 
 /**
@@ -389,6 +388,9 @@ const createGrid = () => {
   
   const width = gameBody.value.clientWidth;
   const height = gameBody.value.clientHeight;
+  
+  // 元素隐藏时（display: none）不重新计算网格
+  if (width === 0 || height === 0) return;
   
   // 根据窗口大小调整格子尺寸
   if (width < WINDOW_SIZE_THRESHOLDS.SMALL) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" @click.stop="bringToFront">
+  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
     <TitleBlock title="照片" bgColor="#e6e6e6"></TitleBlock>
     <n-tabs type="line" v-model:value="photoType" @update:value="typeChange" :bar-width="16" :tabs-padding="16">
       <n-tab v-for="item in typeList" :key="item.value" :name="item.value">{{ item.label }}</n-tab>
@@ -61,7 +61,7 @@ interface PhotoItem {
 
 // 窗口管理 composable
 // @ts-ignore
-const { windowRef, bringToFront } = useWindow("照片");
+const { windowRef, bringToFront, isHidden } = useWindow("照片");
 const typeList = [
   { label: "美女模特", value: "6" },
   { label: "爱情美图", value: "30" },

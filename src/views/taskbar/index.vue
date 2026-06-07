@@ -196,20 +196,10 @@ const taskBarLeftHaveLine = (value: { name: string }) => {
   // 先关闭所有弹窗
   closeAllPopups();
 
-  underLineApp.value.forEach((item: appItem) => {
-    if (item.name === value.name) {
-      handleAppClick(item);
-    } else {
-      // 其他已打开且未最小化的应用设为最小化
-      if (item.open && !item.mini) {
-        store.changeAppStatus({
-          name: item.name,
-          key: "mini",
-          value: true,
-        });
-      }
-    }
-  });
+  const targetApp = underLineApp.value.find((item: appItem) => item.name === value.name);
+  if (targetApp) {
+    handleAppClick(targetApp);
+  }
 };
 
 /**
@@ -225,19 +215,13 @@ const handleAppClick = (item: appItem) => {
       value: true,
     });
     bus.emit(item.name);
-  } else if (item.hidden || item.mini) {
-    // 应用已打开但被隐藏或最小化，则还原显示并带到最前
-    store.changeAppStatus({
-      name: item.name,
-      key: "hidden",
-      value: false,
-    });
+  } else if (item.mini) {
+    // 应用已打开但被隐藏，则还原显示并带到最前
     store.changeAppStatus({
       name: item.name,
       key: "mini",
       value: false,
     });
-    // 显式设置为置顶，确保下划线状态同步
     store.changeAppStatus({
       name: item.name,
       key: "isTop",
@@ -245,22 +229,11 @@ const handleAppClick = (item: appItem) => {
     });
     bus.emit(item.name);
   } else if (item.isTop) {
-    // 应用在最顶层且可见，则最小化
-    store.changeAppStatus({
-      name: item.name,
-      key: "hidden",
-      value: true,
-    });
+    // 应用在最顶层且可见，则最小化（handleMiniStateChange 会自动取消置顶并提升下一个应用）
     store.changeAppStatus({
       name: item.name,
       key: "mini",
       value: true,
-    });
-    // 确保 isTop 为 false
-    store.changeAppStatus({
-      name: item.name,
-      key: "isTop",
-      value: false,
     });
   } else {
     // 应用已打开但未在顶层，则带到最前，并同步更新 isTop 状态

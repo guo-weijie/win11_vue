@@ -42,9 +42,9 @@ const appComponentMap: Record<string, Component> = {
 const desktopApps = computed(() => store.getTypeApp("isDesktop"));
 
 /**
- * 获取已打开且可见的应用列表
+ * 获取已打开的应用列表（open=true 时 DOM 存在，通过 v-show 控制可见性）
  */
-const openedApps = computed(() => store.getApp.filter((app: appItem) => app.open && !app.hidden));
+const openedApps = computed(() => store.getApp.filter((app: appItem) => app.open));
 
 /**
  * 根据应用名称获取对应的组件
@@ -56,17 +56,12 @@ const getAppComponent = (appName: string): Component | null => {
 };
 
 /**
- * 打开应用或从最小化状态恢复
+ * 打开应用或从隐藏状态恢复
  * @param app 应用项
  */
 const openApp = (app: appItem) => {
   if (app.mini) {
-    // 应用处于最小化状态，恢复显示并置顶
-    store.changeAppStatus({
-      name: app.name,
-      key: "hidden",
-      value: false,
-    });
+    // 应用处于隐藏状态，恢复显示并置顶
     store.changeAppStatus({
       name: app.name,
       key: "mini",
@@ -78,7 +73,7 @@ const openApp = (app: appItem) => {
       value: true,
     });
   } else if (!app.open) {
-    // 应用未打开，则打开（openApp 内部已设置 isTop=true）
+    // 应用未打开，则打开（openApp 内部已设置 isTop=true, mini=false）
     store.changeAppStatus({
       name: app.name,
       key: "open",
