@@ -1,7 +1,7 @@
 <template>
   <div class="menuItemList">
     <!-- 系统 -->
-    <div class="system" v-show="(props.menuItemListData as Record<string, any>).name === '系统'">
+    <div class="system" v-show="menuName === '系统'">
       <div class="systemLeft">
         <img :src="getWallpaperUrl(backgroundImgUrl)" alt="windows11 背景图片" />
         <div>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- 网络和 Internet -->
-    <div class="network" v-show="(props.menuItemListData as Record<string, any>).name === '网络和 Internet'">
+    <div class="network" v-show="menuName === '网络和 Internet'">
       <div class="networkLeft">
         <n-icon size="92" color="#138fdb">
           <TvUsb20Regular />
@@ -59,7 +59,7 @@
     </div>
 
     <!-- 个性化 -->
-    <div class="personalize" v-show="(props.menuItemListData as Record<string, any>).name === '个性化'">
+    <div class="personalize" v-show="menuName === '个性化'">
       <img :src="getWallpaperUrl(backgroundImgUrl)" class="viewBox" alt="windows11 背景图片" />
       <div class="selectBox">
         <div class="boxTitle">选择要应用的主题</div>
@@ -77,7 +77,7 @@
     </div>
 
     <!-- 账户 -->
-    <div class="account" v-show="(props.menuItemListData as Record<string, any>).name === '账户'">
+    <div class="account" v-show="menuName === '账户'">
       <img :src="getUserAvatarUrl(userAvatar)" :alt="userName" />
       <div>
         <div class="userName">{{ userName }}</div>
@@ -87,7 +87,7 @@
     </div>
 
     <!-- windows 更新 -->
-    <div class="update" v-show="(props.menuItemListData as Record<string, any>).name === 'Windows 更新'">
+    <div class="update" v-show="menuName === 'Windows 更新'">
       <div class="updateLeft">
         <img src="../../../assets/icon/systemIcon/updatec.png" alt="windows11 更新" />
         <div>
@@ -99,7 +99,7 @@
     </div>
 
     <!-- windows 更新 -->
-    <div class="updateLess" v-show="(props.menuItemListData as Record<string, any>).name === 'Windows 更新'">
+    <div class="updateLess" v-show="menuName === 'Windows 更新'">
       <n-icon size="16" color="#191a1a">
         <ChatBubblesQuestion20Filled />
       </n-icon>
@@ -107,8 +107,8 @@
     </div>
 
     <div
-      v-for="(item, index) in (props.menuItemListData as Record<string, any>).children"
-      :key="item + index"
+      v-for="(item, index) in props.menuItemListData.children"
+      :key="item.title + index"
       class="listContainer"
     >
       <div class="listTitle" v-if="item.title">{{ item.title }}</div>
@@ -129,6 +129,7 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, ref } from "vue";
 import { NIcon, NButton } from "naive-ui";
 import {
   ChevronRight20Regular,
@@ -139,28 +140,34 @@ import {
   TvUsb20Regular,
 } from "@vicons/fluent";
 import { userStore } from "@/store/user";
-import { reactive } from "vue";
 import { storeToRefs } from "pinia";
+import type { MenuData } from "../menu";
 
 const store = userStore();
 const { userName, userAvatar, backgroundImgUrl } = storeToRefs(store);
 
-const props = defineProps({
-  menuItemListData: Object,
-});
-const emit = defineEmits(["changeItem"]);
+const props = defineProps<{
+  menuItemListData: MenuData;
+}>();
+const emit = defineEmits<{
+  changeItem: [name: string, num: number];
+}>();
+
+const menuName = computed(() => props.menuItemListData.name);
 
 const toItem = (name: string, num: number) => {
   emit("changeItem", name, num);
 };
 
-// 获取壁纸图片URL
+// 获取壁纸图片URL（预构建查找 Map，避免每次调用都遍历）
 const images = import.meta.glob<{ default: string }>("/src/assets/wallpaper/**/*.jpg", { eager: true });
+const wallpaperMap = new Map<string, string>();
+for (const path in images) {
+  wallpaperMap.set(path, images[path].default);
+}
 const getWallpaperUrl = (url: string) => {
-  for (const path in images) {
-    if (path.includes(url)) {
-      return images[path].default;
-    }
+  for (const [path, imgUrl] of wallpaperMap) {
+    if (path.includes(url)) return imgUrl;
   }
 };
 
@@ -169,42 +176,20 @@ const getUserAvatarUrl = (path: string) => {
   return new URL(`../../../assets/icon/${path}.png`, import.meta.url).href;
 };
 
-const imgListData = reactive([
-  {
-    url: "/default/img0.jpg",
-    select: true,
-  },
-  {
-    url: "/ThemeC/img0.jpg",
-    select: false,
-  },
-  {
-    url: "/ThemeA/img0.jpg",
-    select: false,
-  },
-  {
-    url: "/default/img1.jpg",
-    select: false,
-  },
-  {
-    url: "/ThemeB/img0.jpg",
-    select: false,
-  },
-  {
-    url: "/ThemeD/img0.jpg",
-    select: false,
-  },
+const imgListData = ref([
+  { url: "/default/img0.jpg", select: true },
+  { url: "/ThemeC/img0.jpg", select: false },
+  { url: "/ThemeA/img0.jpg", select: false },
+  { url: "/default/img1.jpg", select: false },
+  { url: "/ThemeB/img0.jpg", select: false },
+  { url: "/ThemeD/img0.jpg", select: false },
 ]);
 
 const changeBgImg = (num: number) => {
-  imgListData.forEach((item, index) => {
-    if (index === num) {
-      item.select = true;
-      store.changeBackgroundImgUrl(item["url"]);
-    } else {
-      item.select = false;
-    }
+  imgListData.value.forEach((item, index) => {
+    item.select = index === num;
   });
+  store.changeBackgroundImgUrl(imgListData.value[num].url);
 };
 </script>
 
@@ -213,13 +198,11 @@ const changeBgImg = (num: number) => {
 
 .menuItemList {
   width: calc(100% - 4px);
-  // height: 100%;
   height: calc(100% - 70px);
   overflow-y: auto;
 
   &::-webkit-scrollbar {
     width: 2px;
-    height: 303px;
   }
 
   &::-webkit-scrollbar-thumb {
@@ -232,9 +215,9 @@ const changeBgImg = (num: number) => {
 
     .listTitle {
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 600;
       color: #1a1a1a;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
   }
 
@@ -243,12 +226,15 @@ const changeBgImg = (num: number) => {
     height: 67px;
     background-color: #fafcfd;
     margin-bottom: 3px;
-    border: 1px solid #e0e6ea;
-    border-radius: 5px;
+    border: 1px solid #e4e4e8;
+    border-radius: 6px;
+    cursor: pointer;
     @include flex(space-between, center);
+    transition: background-color 150ms ease, border-color 150ms ease;
 
     &:hover {
-      background-color: #f4f7f9;
+      background-color: #f5f6f8;
+      border-color: #d0d3da;
     }
 
     .n-icon {
@@ -282,6 +268,7 @@ const changeBgImg = (num: number) => {
   max-width: 1000px;
   height: 68px;
   margin-bottom: 26px;
+  padding: 0 4px;
   @include flex(space-between, center);
 
   .systemLeft {
@@ -290,15 +277,16 @@ const changeBgImg = (num: number) => {
     img {
       width: 112px;
       height: 60px;
-      border: 4px solid #000000;
-      border-radius: 5px;
+      border: 1px solid #d0d3da;
+      border-radius: 8px;
       margin-right: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
 
     .first {
       color: #1a1a1a;
-      font-weight: bold;
-      font-size: 12px;
+      font-weight: 600;
+      font-size: 14px;
     }
 
     .second {
@@ -307,13 +295,26 @@ const changeBgImg = (num: number) => {
     }
 
     .rename {
-      color: #003e92;
-      font-size: 14px;
+      color: #0067c0;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:hover {
+        color: #00509e;
+      }
     }
   }
 
   .systemRight {
     @include flex(flex-end, center);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.03);
+    }
 
     img {
       width: 20px;
@@ -322,7 +323,7 @@ const changeBgImg = (num: number) => {
     }
 
     .updated {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 14px;
       color: #101010;
     }
@@ -338,6 +339,7 @@ const changeBgImg = (num: number) => {
   max-width: 1000px;
   @include flex(space-between, center);
   margin-bottom: 20px;
+  padding: 0 4px;
 
   &Left {
     @include flex(flex-start, center);
@@ -348,8 +350,8 @@ const changeBgImg = (num: number) => {
   }
 
   &Center {
-    padding: 11px 8px;
-    border-radius: 5px;
+    padding: 11px 12px;
+    border-radius: 6px;
     @include flex(flex-start, center);
 
     & > .n-icon {
@@ -360,14 +362,14 @@ const changeBgImg = (num: number) => {
   &Right {
     width: 192px;
     height: 56px;
-    border-radius: 5px;
+    border-radius: 6px;
     @include flex(space-around, center);
   }
 
   &Title {
     font-size: 14px;
     color: #191a1a;
-    font-weight: bold;
+    font-weight: 600;
   }
 
   &Desc {
@@ -380,8 +382,13 @@ const changeBgImg = (num: number) => {
     }
   }
 
-  .hoverStyle:hover {
-    background-color: #e7ebf0;
+  .hoverStyle {
+    cursor: pointer;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: #f0f2f5;
+    }
   }
 }
 
@@ -389,17 +396,19 @@ const changeBgImg = (num: number) => {
   max-width: 1000px;
   height: 92px;
   margin-bottom: 30px;
+  padding: 0 4px;
   @include flex(flex-start, center);
 
   img {
     height: 100%;
+    border-radius: 50%;
     margin-right: 16px;
   }
 
   .userName {
     font-size: 14px;
-    font-weight: bold;
-    color: #000000;
+    font-weight: 600;
+    color: #1a1a1a;
   }
 
   &Type {
@@ -417,18 +426,20 @@ const changeBgImg = (num: number) => {
   @include flex(flex-start, center);
   max-width: 1000px;
   margin-bottom: 20px;
+  padding: 0 4px;
 
   .viewBox {
     width: 335px;
     height: 188px;
-    border-radius: 5px;
+    border-radius: 8px;
     margin-right: 48px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .selectBox {
     font-size: 14px;
     color: #191a1a;
-    font-weight: bold;
+    font-weight: 600;
 
     .boxTitle {
       margin-bottom: 16px;
@@ -443,7 +454,13 @@ const changeBgImg = (num: number) => {
       img {
         width: 100%;
         height: 100%;
-        border-radius: 5px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 150ms ease;
+
+        &:hover {
+          transform: scale(1.03);
+        }
       }
 
       .selected {
@@ -459,14 +476,23 @@ const changeBgImg = (num: number) => {
   max-width: 1000px;
   @include flex(space-between, center);
   margin-bottom: 26px;
+  padding: 0 4px;
 
   &Less {
     @include flex(flex-start, center);
-    color: #003e92;
+    cursor: pointer;
+    color: #0067c0;
     font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: rgba(0, 103, 192, 0.06);
+    }
 
     .n-icon {
-      margin-right: 14px;
+      margin-right: 10px;
     }
   }
 
@@ -480,8 +506,8 @@ const changeBgImg = (num: number) => {
     }
 
     .lastedVer {
-      font-size: 17px;
-      font-weight: bold;
+      font-size: 16px;
+      font-weight: 600;
       color: #191a1a;
     }
 

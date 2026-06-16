@@ -1,7 +1,6 @@
 <template>
-  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
-    <!-- 标题栏 -->
-    <TitleBlock title="Edge" bgColor="#cdcdcd">
+  <AppWindow title="Edge">
+    <template #titleLeft>
       <div class="titleLeft">
         <div class="leftTagName">
           <img src="@/assets/icon/appIcon/home.png" alt="windows11" />
@@ -15,7 +14,8 @@
           </template>
         </n-button>
       </div>
-    </TitleBlock>
+    </template>
+
     <!-- 导航栏 -->
     <div class="edgeNav">
       <n-button @click="naviBtn(-1)" :bordered="false">
@@ -56,7 +56,7 @@
     <div class="edgeBody">
       <iframe :src="edgeUrl"></iframe>
     </div>
-  </div>
+  </AppWindow>
 </template>
 
 <script lang="ts" setup>
@@ -70,15 +70,10 @@ import {
 } from "@vicons/fluent";
 import { NIcon, NButton, NInput } from "naive-ui";
 import { ref, shallowRef, computed } from "vue";
-import TitleBlock from "@/components/titleBlock";
-import { useWindow } from "@/composables/useWindow";
+import AppWindow from "@/components/appWindow/index.vue";
 
 // 类型定义
 type NavigationDirection = -1 | 0 | 1;
-
-// 窗口管理 composable
-// @ts-ignore
-const { windowRef, bringToFront, isHidden } = useWindow("Edge");
 
 // 常量定义
 const DEFAULT_URL = "https://keep-silent.com";
@@ -88,87 +83,57 @@ const BLACK_COLOR = "#000";
 
 // 浏览器历史记录
 const historyData = ref<string[]>([DEFAULT_URL]);
-// 当前所在的历史记录位置
 const step = ref(0);
 
-// 输入框前图标（使用 shallowRef 优化性能）
+// 输入框前图标
 const inputBarIcon = shallowRef(Search20Regular);
 
 // iframe URL
 const edgeUrl = ref(DEFAULT_URL);
-// 用户输入的值
 const inputValue = ref(DEFAULT_URL);
 
-// 计算属性：判断是否可以后退/前进
+// 计算属性
 const canGoBack = computed(() => step.value > 0);
 const canGoForward = computed(() => step.value < historyData.value.length - 1);
-
-// 计算属性：按钮颜色
 const leftGray = computed(() => (canGoBack.value ? BLACK_COLOR : GRAY_COLOR));
 const rightGray = computed(() => (canGoForward.value ? BLACK_COLOR : GRAY_COLOR));
 
-/**
- * 处理 URL 输入
- */
 const processUrlInput = (url: string): string => {
-  // 如果已经是完整 URL，直接返回
   if (url.includes("http://") || url.includes("https://")) {
     return url;
   }
-
-  // 如果是域名格式，添加 https://
   if (url.includes("www.") || url.includes(".co")) {
     return `https://${url}`;
   }
-
-  // 否则作为搜索关键词
   return `${BING_SEARCH_URL}${url}`;
 };
 
-/**
- * 添加历史记录
- */
 const addHistory = (url: string) => {
-  // 移除当前位置之后的历史记录
   historyData.value = historyData.value.slice(0, step.value + 1);
   historyData.value.push(url);
   step.value++;
 };
 
-/**
- * 输入完成按回车键触发事件
- */
 const inputComplete = () => {
   if (!inputValue.value.trim()) return;
 
   const processedUrl = processUrlInput(inputValue.value.trim());
-
-  // 更新输入框显示（如果是自动补全的 URL）
   if (processedUrl !== inputValue.value) {
     inputValue.value = processedUrl;
   }
 
-  // 设置锁图标
   inputBarIcon.value = LockClosed20Regular;
-
-  // 添加历史记录并导航
   addHistory(processedUrl);
   edgeUrl.value = processedUrl;
 };
-/**
- * 导航按钮：后退、前进、刷新
- * @param direction -1=后退, 1=前进, 0=刷新
- */
+
 const naviBtn = (direction: NavigationDirection) => {
   if (direction === 0) {
-    // 刷新：重新加载当前页面
     edgeUrl.value = historyData.value[step.value];
     return;
   }
 
   const newStep = step.value + direction;
-
-  // 边界检查
   if (newStep < 0 || newStep >= historyData.value.length) return;
 
   step.value = newStep;
@@ -176,9 +141,7 @@ const naviBtn = (direction: NavigationDirection) => {
   edgeUrl.value = targetUrl;
   inputValue.value = targetUrl;
 };
-/**
- * 输入框正在输入时重置图标
- */
+
 const onInput = () => {
   inputBarIcon.value = Search20Regular;
 };

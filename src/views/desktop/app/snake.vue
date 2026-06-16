@@ -1,6 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
-    <TitleBlock title="贪吃蛇"></TitleBlock>
+  <AppWindow ref="appWindow" title="贪吃蛇">
     <div class="appBody game">
       <div class="gameBody" ref="gameBody">
         <div
@@ -79,13 +78,12 @@
       positive-text="确定"
       @positive-click="showModal = false"
     />
-  </div>
+  </AppWindow>
 </template>
 
 <script lang="ts" setup>
-import TitleBlock from "@/components/titleBlock";
+import AppWindow from "@/components/appWindow/index.vue";
 import { onMounted, reactive, ref, onUnmounted, nextTick } from "vue";
-import { useWindow } from "@/composables/useWindow";
 import { NSwitch, NIcon, NButton, NModal } from "naive-ui";
 import {
   ChevronLeft16Regular,
@@ -115,10 +113,10 @@ interface SnakeState {
 }
 
 // ============ 常量定义 ============
-const INITIAL_SPEED = 1000; // 初始速度（毫秒）
-const MIN_SPEED = 200; // 最小速度
-const SPEED_DECREMENT = 2; // 每5分减少的毫秒数
-const SCORE_PER_APPLE = 5; // 每次加速的分数间隔
+const INITIAL_SPEED = 1000;
+const MIN_SPEED = 200;
+const SPEED_DECREMENT = 2;
+const SCORE_PER_APPLE = 5;
 
 const WINDOW_SIZE_THRESHOLDS = {
   SMALL: 500,
@@ -131,7 +129,6 @@ const GRID_SIZES = {
   LARGE: 30,
 };
 
-// 方向按键映射
 const KEY_DIRECTION_MAP: KeyMap = {
   ArrowDown: "bottom",
   ArrowUp: "top",
@@ -142,16 +139,16 @@ const KEY_DIRECTION_MAP: KeyMap = {
 const VALID_KEYS = Object.keys(KEY_DIRECTION_MAP);
 
 // ============ 响应式状态 ============
-// 窗口管理 composable
-const { windowRef, bringToFront, isHidden } = useWindow("贪吃蛇");
+// AppWindow 实例引用（用于访问 windowRef）
+const appWindow = ref<InstanceType<typeof AppWindow> | null>(null);
 
 // 游戏容器引用
 const gameBody = ref<HTMLElement | null>(null);
 
 // 游戏状态
-const isGameRunning = ref(true); // true=未开始/已结束，false=运行中
-const hasBorder = ref(false); // 是否有边界
-const showBorderOption = ref(true); // 是否显示边界选项
+const isGameRunning = ref(true);
+const hasBorder = ref(false);
+const showBorderOption = ref(true);
 
 // 蛇的状态
 const snake = reactive<SnakeState>({
@@ -181,15 +178,12 @@ let gameTimer: number | undefined = undefined;
 const showModal = ref(false);
 const modalContent = ref("");
 
-// 方格列表（用于渲染）
+// 方格列表
 const blockList = reactive({
   blocks: [] as number[],
 });
 
-// ============ 计算属性 ============
-/**
- * 判断是否可以朝某个方向移动
- */
+// ============ 游戏逻辑函数 ============
 const canChangeDirection = (newDirection: Direction): boolean => {
   const opposites: Record<Direction, Direction[]> = {
     left: ["left", "right"],
@@ -200,95 +194,59 @@ const canChangeDirection = (newDirection: Direction): boolean => {
   return !opposites[newDirection].includes(snake.direction);
 };
 
-/**
- * 获取蛇身位置的 Set（用于快速查找）
- */
 const getSnakeBodySet = (): Set<number> => {
   return new Set(snake.body);
 };
 
-// ============ 游戏逻辑函数 ============
-
-/**
- * 显示游戏结束提示
- */
 const showGameOver = (message: string) => {
   modalContent.value = message;
   showModal.value = true;
   showBorderOption.value = true;
 };
 
-/**
- * 检查是否撞墙
- */
 const checkWallCollision = (position: number): boolean => {
-  // 左边界
-  if (position < 0) {
-    return hasBorder.value;
-  }
-  // 右边界
-  if (position >= gridConfig.total) {
-    return hasBorder.value;
-  }
-  
+  if (position < 0) return hasBorder.value;
+  if (position >= gridConfig.total) return hasBorder.value;
+
   const currentCol = snake.body[snake.body.length - 1] % gridConfig.columns;
   const newCol = position % gridConfig.columns;
-  
-  // 左右穿越检测
-  if (snake.direction === "right" && currentCol > newCol) {
-    return hasBorder.value;
-  }
-  if (snake.direction === "left" && currentCol < newCol) {
-    return hasBorder.value;
-  }
-  
+
+  if (snake.direction === "right" && currentCol > newCol) return hasBorder.value;
+  if (snake.direction === "left" && currentCol < newCol) return hasBorder.value;
+
   return false;
 };
 
-/**
- * 处理边界穿越
- */
 const handleWrapAround = (position: number): number => {
   let newPos = position;
-  
+
   if (newPos < 0) {
-    // 从左边界穿到右边界
     newPos = gridConfig.columns - 1;
   } else if (newPos >= gridConfig.total) {
-    // 从下边界穿到上边界
     newPos = newPos - gridConfig.total;
   } else {
     const currentCol = snake.body[snake.body.length - 1] % gridConfig.columns;
     const newCol = newPos % gridConfig.columns;
-    
-    // 从右边界穿到左边界
+
     if (snake.direction === "right" && currentCol > newCol) {
       newPos = newPos - gridConfig.columns;
-    }
-    // 从左边界穿到右边界
-    else if (snake.direction === "left" && currentCol < newCol) {
+    } else if (snake.direction === "left" && currentCol < newCol) {
       newPos = newPos + gridConfig.columns;
     }
   }
-  
+
   return newPos;
 };
 
-/**
- * 检查是否撞到自己
- */
 const checkSelfCollision = (position: number): boolean => {
   const bodySet = getSnakeBodySet();
   return bodySet.has(position);
 };
 
-/**
- * 计算下一步位置
- */
 const calculateNextPosition = (): number => {
   const head = snake.body[snake.body.length - 1];
   let step = 0;
-  
+
   switch (snake.direction) {
     case "left":
       step = -1;
@@ -303,70 +261,56 @@ const calculateNextPosition = (): number => {
       step = gridConfig.columns;
       break;
   }
-  
+
   return head + step;
 };
 
-/**
- * 蛇移动一步
- */
 const moveSnake = () => {
   const nextPosition = calculateNextPosition();
-  
-  // 检查撞墙
+
   if (checkWallCollision(nextPosition)) {
     showGameOver(`游戏结束，分数：${snake.length - 1}`);
     resetGame();
     return;
   }
-  
-  // 处理边界穿越
+
   const finalPosition = hasBorder.value ? nextPosition : handleWrapAround(nextPosition);
-  
-  // 检查撞到自己
+
   if (checkSelfCollision(finalPosition)) {
     showGameOver(`游戏结束，分数：${snake.length - 1}`);
     resetGame();
     return;
   }
-  
-  // 检查是否通关
+
   if (snake.body.length >= gridConfig.total) {
     showGameOver(`恭喜通关，分数：${snake.length - 1}`);
     resetGame();
     return;
   }
-  
-  // 移动蛇：添加新头部
+
   snake.body.push(finalPosition);
-  
-  // 检查是否吃到苹果
+
   if (applePosition.value !== undefined && finalPosition === applePosition.value) {
     snake.length++;
     applePosition.value = undefined;
-    
-    // 每5分加速一次
+
     if (gameSpeed.value >= MIN_SPEED && snake.length % SCORE_PER_APPLE === 1) {
       const level = Math.floor((snake.length - 1) / SCORE_PER_APPLE);
       gameSpeed.value = Math.max(MIN_SPEED, INITIAL_SPEED - level * SPEED_DECREMENT * SCORE_PER_APPLE);
       restartGameTimer();
     }
-    
+
     generateApple();
   } else {
-    // 没吃到苹果，移除尾部
     snake.body.shift();
   }
 };
 
-/**
- * 生成苹果（使用循环避免递归栈溢出）
- */
 const generateApple = () => {
   const bodySet = getSnakeBodySet();
   let attempts = 0;
-  const maxAttempts = gridConfig.total * 2; // 防止无限循环
-  
+  const maxAttempts = gridConfig.total * 2;
+
   while (attempts < maxAttempts) {
     const position = Math.floor(Math.random() * gridConfig.total);
     if (!bodySet.has(position)) {
@@ -375,24 +319,18 @@ const generateApple = () => {
     }
     attempts++;
   }
-  
-  // 如果找不到空位，说明已经填满（通关）
+
   showGameOver(`恭喜通关，分数：${snake.length - 1}`);
 };
 
-/**
- * 创建游戏网格
- */
 const createGrid = () => {
   if (!gameBody.value) return;
-  
+
   const width = gameBody.value.clientWidth;
   const height = gameBody.value.clientHeight;
-  
-  // 元素隐藏时（display: none）不重新计算网格
+
   if (width === 0 || height === 0) return;
-  
-  // 根据窗口大小调整格子尺寸
+
   if (width < WINDOW_SIZE_THRESHOLDS.SMALL) {
     gridConfig.size = GRID_SIZES.SMALL;
   } else if (width > WINDOW_SIZE_THRESHOLDS.LARGE) {
@@ -400,44 +338,33 @@ const createGrid = () => {
   } else {
     gridConfig.size = GRID_SIZES.MEDIUM;
   }
-  
-  // 计算行列数
+
   gridConfig.columns = Math.floor(width / gridConfig.size);
   gridConfig.rows = Math.floor(height / gridConfig.size);
   gridConfig.total = gridConfig.columns * gridConfig.rows;
-  
-  // 生成方格ID数组
+
   blockList.blocks = Array.from({ length: gridConfig.total }, (_, i) => i);
 };
 
-/**
- * 键盘事件处理
- */
 const handleKeyPress = (event: KeyboardEvent | string) => {
   let direction: Direction;
-  
+
   if (typeof event === "string") {
     direction = event as Direction;
   } else {
     if (!VALID_KEYS.includes(event.code)) return;
     direction = KEY_DIRECTION_MAP[event.code];
   }
-  
+
   if (!canChangeDirection(direction)) return;
-  
+
   snake.direction = direction;
 };
 
-/**
- * 方向按钮点击事件
- */
 const changePosition = (position: string) => {
   handleKeyPress(position);
 };
 
-/**
- * 重启游戏定时器（用于速度变化时）
- */
 const restartGameTimer = () => {
   if (!isGameRunning.value) {
     clearInterval(gameTimer);
@@ -445,12 +372,9 @@ const restartGameTimer = () => {
   }
 };
 
-/**
- * 开始/暂停游戏
- */
 const toggleGame = (shouldStart: boolean) => {
   isGameRunning.value = !shouldStart;
-  
+
   if (shouldStart) {
     showBorderOption.value = false;
     gameTimer = setInterval(moveSnake, gameSpeed.value);
@@ -460,34 +384,26 @@ const toggleGame = (shouldStart: boolean) => {
   }
 };
 
-/**
- * 重置游戏
- */
 const resetGame = () => {
   clearInterval(gameTimer);
   gameTimer = undefined;
-  
+
   isGameRunning.value = true;
   snake.body = [0];
   snake.direction = "right";
   snake.length = 1;
   gameSpeed.value = INITIAL_SPEED;
   showBorderOption.value = true;
-  
+
   createGrid();
   generateApple();
 };
 
-/**
- * 初始化/重置游戏（对外暴露）
- */
 const initGame = () => {
   resetGame();
 };
 
 // ============ 生命周期钩子 ============
-
-// ResizeObserver 监听窗口大小变化
 const resizeObserver = new ResizeObserver(() => {
   nextTick(() => {
     initGame();
@@ -497,28 +413,19 @@ const resizeObserver = new ResizeObserver(() => {
 onMounted(() => {
   createGrid();
   generateApple();
-  
-  // 监听窗口大小变化
-  if (windowRef.value) {
-    resizeObserver.observe(windowRef.value);
+
+  // 通过 AppWindow 暴露的 windowRef 监听窗口大小变化
+  if (appWindow.value?.windowRef) {
+    resizeObserver.observe(appWindow.value.windowRef);
   }
-  
-  // 注册键盘事件
+
   document.addEventListener("keydown", handleKeyPress);
 });
 
 onUnmounted(() => {
-  // 清理定时器
   clearInterval(gameTimer);
-  
-  // 移除 ResizeObserver
   resizeObserver.disconnect();
-  
-  // 移除键盘事件
   document.removeEventListener("keydown", handleKeyPress);
-  
-  // 清理 ResizeObserver
-  resizeObserver.disconnect();
 });
 </script>
 

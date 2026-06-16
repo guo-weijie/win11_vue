@@ -1,8 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
-    <!-- 标题栏 -->
-    <TitleBlock title="画图" bgColor="#cdcdcd" />
-
+  <AppWindow title="画图">
     <!-- 工具栏 -->
     <div class="toolbar">
       <div class="tool-group">
@@ -72,17 +69,12 @@
       <span>坐标: ({{ coordinates.x }}, {{ coordinates.y }})</span>
       <span>画布: {{ canvasWidth }} x {{ canvasHeight }}</span>
     </div>
-  </div>
+  </AppWindow>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import TitleBlock from "@/components/titleBlock";
-import { useWindow } from "@/composables/useWindow";
-
-// ============ 窗口管理 ============
-// @ts-ignore
-const { windowRef, bringToFront, isHidden } = useWindow("画图");
+import AppWindow from "@/components/appWindow/index.vue";
 
 // ============ 画图状态 ============
 const canvasRef = ref<HTMLCanvasElement | null>(null);

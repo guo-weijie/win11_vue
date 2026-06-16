@@ -365,7 +365,7 @@ onMounted(() => {
 @mixin bgHover {
   border-radius: 5px;
   background-color: inherit;
-  transition: background-color 300ms;
+  transition: background-color 150ms ease, transform 100ms ease;
 
   &:hover {
     background-color: var(--start-hover-bg-color);
@@ -373,7 +373,7 @@ onMounted(() => {
   }
   
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
   }
 }
 
@@ -385,18 +385,25 @@ onMounted(() => {
   background-color: var(--start-main-bg-color);
 
   .searchBox {
-    height: 100%;
+    height: 38px;
     background-color: var(--start-search-input-bg-color);
-    box-shadow: inset 0 -4px 0 -2px var(--global-theme-color);
-    border-radius: 4px;
-    font-size: 12px;
+    border: 1px solid #e0e0e0;
+    border-bottom: 2px solid var(--global-theme-color);
+    border-radius: 22px;
+    font-size: 13px;
     color: var(--global-placeholder-font-color);
+    cursor: pointer;
     @include flex(flex-start, center);
+    transition: box-shadow 150ms ease;
+
+    &:hover {
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
 
     img {
       height: 14px;
       margin-left: 16px;
-      margin-right: 13px;
+      margin-right: 12px;
     }
   }
 }
@@ -405,39 +412,52 @@ onMounted(() => {
   box-sizing: border-box;
   width: 100%;
   height: calc(100% - 70px - 64px);
-  padding: 20px 32px 0;
+  padding: 16px 32px 0;
   background-color: var(--start-main-bg-color);
 
   .bodyTitle {
     width: 100%;
     height: 48px;
+    margin-bottom: 8px;
     @include flex(space-between, center);
 
     .titleLeft {
-      width: 96px;
-      font-size: 13px;
-      text-align: center;
+      font-size: 14px;
       font-weight: 600;
+      color: #1a1a1a;
     }
 
     .titleRight {
-      padding: 5px 8px 6px 7px;
+      padding: 6px 12px;
       background-color: var(--start-right-btn-bg-color);
       border: 1px solid var(--start-right-btn-border-color);
       border-radius: 5px;
-      margin-right: 32px;
+      cursor: pointer;
       @include flex(center, center);
+      transition: background-color 150ms ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
 
       span {
-        margin: 0 13px;
-        @include mini_font(11);
+        font-size: 12px;
+        margin: 0 4px;
+      }
+
+      .n-icon {
+        font-size: 14px;
       }
     }
   }
 
   .bodyContainer {
     width: 100%;
-    height: calc(100% - 48px);
+    height: calc(100% - 56px);
     position: relative;
   }
 }
@@ -446,7 +466,7 @@ onMounted(() => {
   box-sizing: border-box;
   width: 100%;
   height: 63px;
-  padding: 0 52px;
+  padding: 0 48px;
   background-color: var(--start-footer-bg-color);
   border-top: 1px solid var(--global-window-division-color);
   @include flex(space-between, center);
@@ -454,30 +474,49 @@ onMounted(() => {
   .footerUser {
     height: 40px;
     line-height: 40px;
-    padding-left: 12px;
-    padding-right: 12px;
-    @include bgHover;
+    padding: 0 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+    @include flex(flex-start, center);
+
+    &:hover {
+      background-color: var(--start-hover-bg-color);
+    }
 
     img {
-      width: 32px;
-      vertical-align: middle;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      margin-right: 12px;
+      margin-right: 10px;
+      object-fit: cover;
     }
 
     span {
       font-size: 12px;
+      color: #1a1a1a;
     }
   }
 
   .footerBattery {
     @include flex(flex-end, center);
+    gap: 4px;
 
     .batterySet {
       width: 40px;
       height: 40px;
+      border-radius: 5px;
+      cursor: pointer;
       @include flex(center, center);
-      @include bgHover;
+      transition: background-color 150ms ease;
+
+      &:hover {
+        background-color: var(--start-hover-bg-color);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
     }
 
     .n-icon {
@@ -487,25 +526,32 @@ onMounted(() => {
 }
 
 @at-root .powerMenuBody {
+  padding: 4px;
+
   > div {
-    @include flex(center, center);
+    padding: 8px 16px;
+    border-radius: 5px;
+    @include flex(flex-start, center);
     user-select: none;
     cursor: pointer;
+    transition: background-color 150ms ease;
 
     &:nth-of-type(2) {
-      margin: 14px 0;
+      margin: 4px 0;
     }
     
     &:hover {
       background-color: var(--start-hover-bg-color);
-      border-radius: 4px;
+    }
+
+    &:active {
+      transform: scale(0.97);
     }
   }
 
   span {
-    font-size: 12px;
+    font-size: 13px;
     margin-left: 12px;
-    margin-right: 12px;
   }
 }
 
@@ -518,6 +564,7 @@ onMounted(() => {
   left: 0;
   transition: left 300ms ease-in-out;
   overflow-y: auto;
+  padding: 0 4px 32px;
   
   &::-webkit-scrollbar {
     width: 2px;
@@ -530,65 +577,114 @@ onMounted(() => {
 
   .pinnedAppBox {
     width: 100%;
-    height: 84px;
-    @include grid(6, 1);
-    margin-bottom: 200px;
-    row-gap: 15px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto;
+    gap: 4px;
+    justify-items: center;
+    align-items: start;
+    margin-bottom: 32px;
   }
 
   .pinnedList {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 1;
+    max-width: 84px;
+    padding: 8px 4px 6px;
+    border-radius: 6px;
     @include flex(center, center, column);
-    @include bgHover;
+    transition: background-color 150ms ease, transform 100ms ease;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--start-hover-bg-color);
+      cursor: pointer;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
 
     img {
-      width: 32px;
-      margin-bottom: 9px;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 4px;
     }
 
     span {
-      font-size: 12px;
+      font-size: 11px;
+      color: #1a1a1a;
+      line-height: 1.3;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
     }
   }
 
   .pinnedRecommend {
     font-size: 13px;
-    font-weight: bold;
-    padding-left: 32px;
-    margin-bottom: 20px;
+    font-weight: 600;
+    padding-left: 8px;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+    line-height: 1;
   }
 
   .recommendList {
-    height: 56px;
-    padding-left: 32px;
-    @include grid(2, 1);
-    justify-items: left;
+    padding: 0 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;
+    gap: 4px;
 
     .listItem {
       box-sizing: border-box;
       width: 100%;
-      height: 100%;
-      padding: 18px 0 18px 32px;
-      margin-left: -32px;
+      padding: 10px 12px;
+      border-radius: 6px;
       @include flex(flex-start, center);
-      @include bgHover;
+      transition: background-color 150ms ease, transform 100ms ease;
+      user-select: none;
+
+      &:hover {
+        background-color: var(--start-hover-bg-color);
+        cursor: pointer;
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
 
       img {
+        width: 30px;
         height: 30px;
+        border-radius: 6px;
         margin-right: 12px;
+        flex-shrink: 0;
       }
 
       .itemDesc {
         font-size: 12px;
+        min-width: 0;
 
         div {
-          margin-bottom: 3px;
+          margin-bottom: 2px;
+          color: #1a1a1a;
+          font-weight: 500;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         span {
           color: var(--start-desc-font-color);
-          font-size: 12px;
+          font-size: 11px;
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }
@@ -609,7 +705,6 @@ onMounted(() => {
 
   &::-webkit-scrollbar {
     width: 2px;
-    height: 246px;
   }
 
   &::-webkit-scrollbar-thumb {
@@ -623,21 +718,39 @@ onMounted(() => {
     font-size: 12px;
     padding-left: 20px;
     margin-left: -20px;
-    @include bgHover;
+    border-radius: 5px;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      background-color: var(--start-hover-bg-color);
+      cursor: pointer;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
   .itemBodyIndex {
     text-indent: 0.8em;
     line-height: 40px;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a1a1a;
   }
 
   .itemBodyBox {
     @include flex(flex-start, center);
 
     img {
-      width: 24px;
-      margin-right: 20px;
+      width: 28px;
+      height: 28px;
+      margin-right: 16px;
+    }
+
+    span {
+      font-size: 13px;
+      color: #1a1a1a;
     }
   }
 
@@ -655,7 +768,7 @@ onMounted(() => {
 
   .itemLetterBox {
     display: grid;
-    grid-template-columns: repeat(4, 48px);
+    grid-template-columns: repeat(4, 56px);
     grid-template-rows: repeat(7, 48px);
 
     div {
@@ -665,12 +778,22 @@ onMounted(() => {
       text-align: center;
       font-size: 14px;
       color: var(--start-letterlist-none-color);
-      font-weight: bold;
+      font-weight: 500;
     }
 
     .isFlag {
       color: var(--start-letterlist-have-color);
-      @include bgHover;
+      border-radius: 5px;
+      transition: background-color 150ms ease;
+
+      &:hover {
+        background-color: var(--start-hover-bg-color);
+        cursor: pointer;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
     }
   }
 }

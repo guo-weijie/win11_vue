@@ -1,6 +1,5 @@
 <template>
-  <div class="appContainer" ref="windowRef" v-show="!isHidden" @click.stop="bringToFront">
-    <TitleBlock title="照片" bgColor="#e6e6e6"></TitleBlock>
+  <AppWindow title="照片" bgColor="#e6e6e6">
     <n-tabs type="line" v-model:value="photoType" @update:value="typeChange" :bar-width="16" :tabs-padding="16">
       <n-tab v-for="item in typeList" :key="item.value" :name="item.value">{{ item.label }}</n-tab>
     </n-tabs>
@@ -44,13 +43,12 @@
         </n-space>
       </n-image-group>
     </div>
-  </div>
+  </AppWindow>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, type Ref, onMounted } from "vue";
-import TitleBlock from "@/components/titleBlock";
-import { useWindow } from "@/composables/useWindow";
+import AppWindow from "@/components/appWindow/index.vue";
 import { NTabs, NTab, NImageGroup, NSpace, NImage, NIcon, NButton, NBackTop, NSpin, type ButtonType } from "naive-ui";
 import { Square16Regular, BorderAll24Regular, Table28Regular } from "@vicons/fluent";
 
@@ -59,9 +57,6 @@ interface PhotoItem {
   imgurl: string;
 }
 
-// 窗口管理 composable
-// @ts-ignore
-const { windowRef, bringToFront, isHidden } = useWindow("照片");
 const typeList = [
   { label: "美女模特", value: "6" },
   { label: "爱情美图", value: "30" },
