@@ -23,6 +23,7 @@ import Edge from "./app/edge.vue";
 import Setup from "@/views/setUp/index.vue";
 import Photo from "./app/photo.vue";
 import Snake from "./app/snake.vue";
+import Paint from "./app/paint.vue";
 
 const store = appStore();
 
@@ -34,6 +35,7 @@ const appComponentMap: Record<string, Component> = {
   设置: Setup,
   照片: Photo,
   贪吃蛇: Snake,
+  画图: Paint,
 };
 
 /**

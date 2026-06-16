@@ -43,6 +43,7 @@ import cortanaIcon from "@/assets/icon/appIcon/cortana.png";
 import codeIcon from "@/assets/icon/appIcon/code.png";
 import terminalIcon from "@/assets/icon/appIcon/terminal.png";
 import snakeIcon from "@/assets/icon/appIcon/snake.jpg";
+import PaintIcon from "@/assets/icon/appIcon/paint.png";
 
 /**
  * 应用程序状态说明：
@@ -171,6 +172,17 @@ const defaultApps: AppList = [
   {
     name: "贪吃蛇",
     url: snakeIcon,
+    isDesktop: true,
+    isPinned: true,
+    isTaskBar: false,
+    open: false,
+    mini: false,
+    isTop: false,
+    zIndex: 0,
+  },
+  {
+    name: "画图",
+    url: PaintIcon,
     isDesktop: true,
     isPinned: true,
     isTaskBar: false,
