@@ -119,11 +119,13 @@ const SPEED_DECREMENT = 2;
 const SCORE_PER_APPLE = 5;
 
 const WINDOW_SIZE_THRESHOLDS = {
+  TINY: 360,
   SMALL: 500,
   LARGE: 1000,
 };
 
 const GRID_SIZES = {
+  TINY: 16,
   SMALL: 20,
   MEDIUM: 25,
   LARGE: 30,
@@ -331,7 +333,9 @@ const createGrid = () => {
 
   if (width === 0 || height === 0) return;
 
-  if (width < WINDOW_SIZE_THRESHOLDS.SMALL) {
+  if (width < WINDOW_SIZE_THRESHOLDS.TINY) {
+    gridConfig.size = GRID_SIZES.TINY;
+  } else if (width < WINDOW_SIZE_THRESHOLDS.SMALL) {
     gridConfig.size = GRID_SIZES.SMALL;
   } else if (width > WINDOW_SIZE_THRESHOLDS.LARGE) {
     gridConfig.size = GRID_SIZES.LARGE;
@@ -431,13 +435,36 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 @use "@/style/public" as *;
+@use "@/style/responsive" as *;
 
+// ==================== 基础布局 ====================
 .game {
   display: grid;
-  grid-template-columns: 7.5fr 2.5fr;
   overflow: hidden;
+  height: 100%;
 }
 
+// 桌面端 / 平板：侧栏布局
+@include desktop {
+  .game {
+    grid-template-columns: 7.5fr 2.5fr;
+  }
+}
+@include tablet {
+  .game {
+    // 平板给操作区稍多空间
+    grid-template-columns: 7fr 3fr;
+  }
+}
+// 移动端：上下堆叠
+@include mobile {
+  .game {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55fr 45fr;
+  }
+}
+
+// ==================== 游戏区域 ====================
 .gameBody {
   background-color: #2fd;
   width: 100%;
@@ -460,9 +487,17 @@ onUnmounted(() => {
   }
 }
 
+// ==================== 操作面板 ====================
 .gameOpe {
   background-color: #fff;
   @include flex(center, center, column);
+
+  // 移动端操作面板紧凑化
+  @include mobile {
+    justify-content: flex-start;
+    padding: 10px 0;
+    gap: 8px;
+  }
 
   .fraction {
     font-size: 20px;
@@ -471,12 +506,22 @@ onUnmounted(() => {
     span {
       font-weight: bold;
     }
+
+    @include mobile {
+      font-size: 16px;
+      margin-bottom: 0;
+    }
   }
 
   .n-switch {
     margin-bottom: 40px;
+
+    @include mobile {
+      margin-bottom: 0;
+    }
   }
 
+  // ========== 虚拟方向键 ==========
   .keyBoardTips {
     box-sizing: border-box;
     width: 240px;
@@ -484,6 +529,18 @@ onUnmounted(() => {
     padding: 10px;
     @include grid(3, 3);
     align-content: center;
+
+    @include tablet {
+      width: 200px;
+      height: 200px;
+    }
+
+    @include mobile {
+      // 移动端按短边缩放，控制在 180px ~ 240px
+      width: clamp(160px, 50vmin, 220px);
+      height: clamp(160px, 50vmin, 220px);
+      padding: 6px;
+    }
 
     div {
       width: 100%;
@@ -497,6 +554,9 @@ onUnmounted(() => {
         box-shadow: #ccc 0 0 10px;
         cursor: pointer;
         transition: all 200ms;
+        // 移动端最小触摸面积 44px
+        min-width: 44px;
+        min-height: 44px;
 
         &:active {
           background-color: #ccc;
@@ -510,12 +570,30 @@ onUnmounted(() => {
     }
   }
 
+  // ========== 游戏控制按钮 ==========
   .gameStatus {
     margin-bottom: 40px;
+
+    @include mobile {
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+    }
 
     .n-button {
       font-size: 50px !important;
       margin-right: 20px;
+
+      @include tablet {
+        font-size: 40px !important;
+        margin-right: 14px;
+      }
+
+      @include mobile {
+        font-size: 32px !important;
+        margin-right: 0;
+      }
     }
   }
 }

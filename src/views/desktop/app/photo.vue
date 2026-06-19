@@ -1,47 +1,49 @@
 <template>
   <AppWindow title="照片" bgColor="#e6e6e6">
-    <n-tabs type="line" v-model:value="photoType" @update:value="typeChange" :bar-width="16" :tabs-padding="16">
-      <n-tab v-for="item in typeList" :key="item.value" :name="item.value">{{ item.label }}</n-tab>
-    </n-tabs>
-    <div class="changeSize">
-      <n-space>
-        <n-button :bordered="false" size="small" :type="btnType.btn1" @click="changeType('btn1')">
-          <template #icon>
-            <n-icon>
-              <Square16Regular />
-            </n-icon>
-          </template>
-        </n-button>
-        <n-button :bordered="false" size="small" :type="btnType.btn2" @click="changeType('btn2')">
-          <template #icon>
-            <n-icon>
-              <BorderAll24Regular />
-            </n-icon>
-          </template>
-        </n-button>
-        <n-button :bordered="false" size="small" :type="btnType.btn3" @click="changeType('btn3')">
-          <template #icon>
-            <n-icon>
-              <Table28Regular />
-            </n-icon>
-          </template>
-        </n-button>
-      </n-space>
-    </div>
-    <div class="photoListBox" ref="photoListBox">
-      <n-image-group>
-        <n-space ref="scrollEle">
-          <n-image v-for="item in imgList.list" :key="item.create_time" lazy :height="imgHeight" :src="item.imgurl">
-            <template #placeholder>
-              <div style="width: 300px; height: 300px; line-height: 300px">努力加载中……</div>
+    <div class="photo-container">
+      <n-tabs type="line" v-model:value="photoType" @update:value="typeChange" :bar-width="16" :tabs-padding="16">
+        <n-tab v-for="item in typeList" :key="item.value" :name="item.value">{{ item.label }}</n-tab>
+      </n-tabs>
+      <div class="changeSize">
+        <n-space>
+          <n-button :bordered="false" size="small" :type="btnType.btn1" @click="changeType('btn1')">
+            <template #icon>
+              <n-icon>
+                <Square16Regular />
+              </n-icon>
             </template>
-          </n-image>
-          <n-back-top :right="75" :bottom="75" />
-          <div class="loadingMore">
-            <n-spin size="large" v-show="show" />
-          </div>
+          </n-button>
+          <n-button :bordered="false" size="small" :type="btnType.btn2" @click="changeType('btn2')">
+            <template #icon>
+              <n-icon>
+                <BorderAll24Regular />
+              </n-icon>
+            </template>
+          </n-button>
+          <n-button :bordered="false" size="small" :type="btnType.btn3" @click="changeType('btn3')">
+            <template #icon>
+              <n-icon>
+                <Table28Regular />
+              </n-icon>
+            </template>
+          </n-button>
         </n-space>
-      </n-image-group>
+      </div>
+      <div class="photoListBox" ref="photoListBox">
+        <n-image-group>
+          <n-space ref="scrollEle">
+            <n-image v-for="item in imgList.list" :key="item.create_time" lazy :height="imgHeight" :src="item.imgurl">
+              <template #placeholder>
+                <div style="width: 300px; height: 300px; line-height: 300px">努力加载中……</div>
+              </template>
+            </n-image>
+            <n-back-top :right="75" :bottom="75" />
+            <div class="loadingMore">
+              <n-spin size="large" v-show="show" />
+            </div>
+          </n-space>
+        </n-image-group>
+      </div>
     </div>
   </AppWindow>
 </template>
@@ -150,6 +152,12 @@ getPhotosData();
 </script>
 
 <style lang="scss" scoped>
+.photo-container {
+  background-color: #e6e6e6;
+  height: 100%;
+  overflow: hidden;
+}
+
 .changeSize {
   padding: 10px 150px 10px 0;
 

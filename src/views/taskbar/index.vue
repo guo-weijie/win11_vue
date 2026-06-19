@@ -372,6 +372,7 @@ const btmTime = computed(() => {
 
 <style lang="scss" scoped>
 @use "@/style/public" as *;
+@use "@/style/responsive" as *;
 
 @mixin taskbarFnStyle {
   height: 80%;
@@ -392,6 +393,10 @@ const btmTime = computed(() => {
   height: 47px;
   line-height: 47px;
   background-color: rgba(228, 239, 250, 0.9);
+
+  @include mobile {
+    display: none;
+  }
 
   &Box {
     width: 100%;
@@ -419,6 +424,20 @@ const btmTime = computed(() => {
     &:hover {
       background: #fff;
     }
+
+    @include tablet {
+      margin-right: 3px;
+      padding: 4px 4px 5px;
+    }
+  }
+
+  img {
+    height: 24px;
+    vertical-align: middle;
+
+    @include tablet {
+      height: 20px;
+    }
   }
 
   .underLine {
@@ -441,11 +460,6 @@ const btmTime = computed(() => {
     width: 6px;
     background-color: #7e848a;
   }
-
-  img {
-    height: 24px;
-    vertical-align: middle;
-  }
 }
 
 .taskRight {
@@ -457,14 +471,29 @@ const btmTime = computed(() => {
   text-align: right;
   @include flex(flex-end, center);
 
+  @include tablet {
+    padding-right: 0;
+    font-size: 12px;
+  }
+
   .hideIcon {
     @include taskbarFnStyle;
     @include flex(center, center);
+
+    @include tablet {
+      :deep(.n-icon) {
+        font-size: 16px !important;
+      }
+    }
   }
 
   .language {
     @extend .hideIcon;
     font-size: 14px;
+
+    @include tablet {
+      font-size: 12px;
+    }
   }
 
   .controlCenter {
@@ -474,10 +503,19 @@ const btmTime = computed(() => {
     .centerWifi {
       height: 16px;
       margin-right: 6px;
+
+      @include tablet {
+        height: 14px;
+        margin-right: 4px;
+      }
     }
 
     .centerAudio {
       height: 19px;
+
+      @include tablet {
+        height: 16px;
+      }
     }
   }
 
@@ -485,6 +523,10 @@ const btmTime = computed(() => {
     @include taskbarFnStyle;
     @include flex(center, flex-end, column);
     @include mini_font(11.5);
+
+    @include tablet {
+      @include mini_font(10);
+    }
   }
 }
 
@@ -527,10 +569,18 @@ const btmTime = computed(() => {
   width: 640px;
   height: 0;
   transition: height 150ms ease-in;
+
+  @include tablet {
+    width: 520px;
+  }
 }
 
 .startMenuHeight {
   height: 725px;
+
+  @include tablet {
+    height: 620px;
+  }
 }
 
 .search {
@@ -539,10 +589,19 @@ const btmTime = computed(() => {
   width: 774px;
   height: 0;
   transition: height 150ms ease-in;
+
+  @include tablet {
+    width: 90vw;
+    max-width: 640px;
+  }
 }
 
 .searchHeight {
   height: 724px;
+
+  @include tablet {
+    height: 85vh;
+  }
 }
 
 .center {

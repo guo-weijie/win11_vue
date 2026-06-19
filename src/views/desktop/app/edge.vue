@@ -149,6 +149,7 @@ const onInput = () => {
 
 <style lang="scss" scoped>
 @use "@/style/public" as *;
+@use "@/style/responsive" as *;
 
 .titleLeft {
   box-sizing: border-box;
@@ -177,6 +178,7 @@ const onInput = () => {
 .edgeNav {
   width: 100%;
   height: 38px;
+  background-color: #f3f3f3;
   border-bottom: 1px solid #bfbfbf;
   @include flex(flex-start, center);
 
@@ -196,6 +198,10 @@ const onInput = () => {
 .edgeBody {
   width: 100%;
   height: calc(100% - 40px - 39px);
+
+  @include mobile {
+    height: calc(100% - 39px);
+  }
 
   iframe {
     width: 100%;

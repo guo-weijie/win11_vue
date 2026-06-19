@@ -1,0 +1,196 @@
+// ==========================================
+// 响应式断点系统 & WP8.1 移动端 Mixin
+// ==========================================
+
+// 断点定义
+$breakpoint-mobile: 768px;
+$breakpoint-tablet: 1024px;
+
+// 设备判断
+@mixin mobile {
+  @media (max-width: #{$breakpoint-mobile - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-mobile) and (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+@mixin mobile-tablet {
+  @media (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+// ==========================================
+// WP8.1 移动端专用 Mixin
+// ==========================================
+
+// WP8.1 状态栏高度（留出 notch 安全区）
+$wp-status-bar-height: env(safe-area-inset-top, 24px);
+$wp-app-bar-height: 56px;
+$wp-header-height: 88px;
+
+// WP8.1 磁贴网格
+@mixin wp-tile-grid($cols, $gap: 6px) {
+  display: grid;
+  grid-template-columns: repeat($cols, 1fr);
+  gap: $gap;
+  padding: 0 6px;
+}
+
+// WP8.1 磁贴基础样式
+@mixin wp-tile($color: var(--wp-accent-color), $size: 1) {
+  background-color: $color;
+  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: auto;
+  transition: transform 100ms ease;
+  user-select: none;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// WP8.1 全屏页面布局
+@mixin wp-page {
+  position: fixed;
+  top: $wp-status-bar-height;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - #{$wp-status-bar-height} - #{$wp-app-bar-height});
+  background-color: var(--wp-bg-color);
+  color: var(--wp-font-color);
+  overflow-x: hidden;
+  overflow-y: auto;
+  z-index: 2000;
+  -webkit-overflow-scrolling: touch;
+}
+
+// WP8.1 应用栏（底部）
+@mixin wp-app-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: $wp-app-bar-height;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: var(--wp-appbar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 3000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+// WP8.1 标题栏（大标题 + 留白）
+@mixin wp-page-header {
+  padding: 40px 20px 20px;
+  
+  .wp-title {
+    font-size: 36px;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--wp-font-color);
+  }
+  
+  .wp-subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--wp-font-muted);
+    margin-top: 6px;
+  }
+}
+
+// WP8.1 Pivot 标签栏
+@mixin wp-pivot {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 12px;
+  gap: 0;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wp-pivot-item {
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--wp-font-muted);
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: color 150ms ease;
+
+    &--active {
+      color: var(--wp-accent-color);
+      font-weight: 600;
+      
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 2px;
+        background-color: var(--wp-accent-color);
+        border-radius: 1px;
+      }
+    }
+  }
+}
+
+// WP8.1 列表项
+@mixin wp-list-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  min-height: 52px;
+  border-bottom: 1px solid var(--wp-divider-color);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 150ms ease;
+
+  &:active {
+    background-color: var(--wp-hover-bg);
+  }
+}
+
+// WP8.1 按钮
+@mixin wp-btn($color: var(--wp-accent-color)) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 20px;
+  border: none;
+  background-color: $color;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 100ms ease, opacity 150ms ease;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}

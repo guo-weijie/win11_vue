@@ -169,6 +169,8 @@ const moreChange = (name: string) => {
 </script>
 
 <style lang="scss" scoped>
+@use "@/style/responsive" as *;
+
 .nameLess {
   box-sizing: border-box;
   width: 100%;
@@ -363,6 +365,48 @@ const moreChange = (name: string) => {
 
     &:active {
       transform: none;
+    }
+  }
+}
+
+// ==========================================
+// 平板端适配
+// ==========================================
+@include tablet {
+  .nameLess {
+    padding: 20px 16px 0;
+  }
+
+  .n-input {
+    margin-bottom: 14px;
+
+    :deep(.n-input__prefix) {
+      margin-right: 6px;
+    }
+  }
+
+  .searchBody {
+    height: calc(100% - 34px - 14px);
+
+    .bodyTitleBox {
+      margin-bottom: 2px;
+    }
+
+    .titleBtn {
+      width: 26px;
+      height: 26px;
+    }
+
+    .bodyTitle {
+      :deep(.n-tabs-tab) {
+        height: 28px;
+        font-size: 11px;
+        padding: 7px 10px;
+      }
+    }
+
+    .bodyBox {
+      height: calc(100% - 30px);
     }
   }
 }

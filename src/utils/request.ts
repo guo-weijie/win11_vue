@@ -7,11 +7,6 @@ const server = axios.create({
 
 // 请求拦截
 server.interceptors.request.use(config => {
-  if (config.method === 'get') {
-    config.params.api_key = '7f030309fdf56dac'
-  } else {
-    config.data.api_key = '7f030309fdf56dac'
-  }
   return config
 }, err => {
   return Promise.reject(err)

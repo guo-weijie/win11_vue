@@ -101,10 +101,15 @@ const closeAllTaskbarPopups = () => {
 
 <style lang="scss" scoped>
 @use "@/style/public" as *;
+@use "@/style/responsive" as *;
 
 .desktop {
   position: relative;
   height: calc(100% - 48px);
+
+  @include mobile {
+    display: none;
+  }
 }
 
 .desktopAppContainer {
@@ -119,6 +124,11 @@ const closeAllTaskbarPopups = () => {
     text-align: center;
     padding: 3px;
     margin: 6px 0 22px 1px;
+    cursor: pointer;
+
+    @include tablet {
+      margin: 4px 0 16px 1px;
+    }
 
     &:active {
       border-top-right-radius: 2px;
@@ -128,6 +138,10 @@ const closeAllTaskbarPopups = () => {
 
     img {
       height: 50px;
+
+      @include tablet {
+        height: 42px;
+      }
     }
 
     p {
@@ -137,6 +151,11 @@ const closeAllTaskbarPopups = () => {
       margin: 0;
       font-size: 12px;
       color: #ffffff;
+
+      @include tablet {
+        font-size: 11px;
+        width: 70px;
+      }
     }
   }
 }
@@ -153,30 +172,59 @@ const closeAllTaskbarPopups = () => {
     width: 100%;
     height: calc(100% - 40px);
   }
+
+  @include mobile {
+    // 移动端全屏
+    width: 100vw;
+    height: 100vh;
+  }
 }
 
 .dragStyle {
   width: 50%;
   height: 60%;
+
+  @include tablet {
+    width: 65%;
+    height: 70%;
+  }
 }
 
-// 应用窗口样式
+// 应用窗口布局样式（平板尺寸微调）
 .halfOnLeft {
   width: 50%;
+
+  @include tablet {
+    width: 55%;
+  }
 }
 
 .halfOnRight {
   width: 50%;
   left: 50%;
+
+  @include tablet {
+    width: 55%;
+    left: 45%;
+  }
 }
 
 .moreOnLeft {
   width: 60%;
+
+  @include tablet {
+    width: 65%;
+  }
 }
 
 .moreOnRight {
   width: 40%;
   left: 60%;
+
+  @include tablet {
+    width: 35%;
+    left: 65%;
+  }
 }
 
 .thirdOnLeft {

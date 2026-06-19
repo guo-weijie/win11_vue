@@ -4,10 +4,13 @@
     <div class="system" v-show="menuName === '系统'">
       <div class="systemLeft">
         <img :src="getWallpaperUrl(backgroundImgUrl)" alt="windows11 背景图片" />
-        <div>
+        <div class="systemInfo">
           <div class="first">Windows 11</div>
-          <div class="second">My PC</div>
-          <div class="rename">重命名</div>
+          <div class="systemMeta">
+            <span class="second">My PC</span>
+            <span class="sep">·</span>
+            <span class="rename">重命名</span>
+          </div>
         </div>
       </div>
       <div class="systemRight" @click="toItem('Windows 更新', 10)">
@@ -195,11 +198,26 @@ const changeBgImg = (num: number) => {
 
 <style lang="scss" scoped>
 @use "@/style/public" as *;
+@use "@/style/responsive" as *;
 
 .menuItemList {
   width: calc(100% - 4px);
   height: calc(100% - 70px);
   overflow-y: auto;
+
+  @include mobile {
+    width: 100%;
+    height: auto;
+    padding: 0 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-width: 100vw;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 
   &::-webkit-scrollbar {
     width: 2px;
@@ -211,126 +229,358 @@ const changeBgImg = (num: number) => {
   }
 
   .listContainer {
-    padding-bottom: 40px;
+    padding-bottom: 30px;
+
+    @include mobile {
+      padding-bottom: 24px;
+    }
 
     .listTitle {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 14px;
+      color: #1b1b1b;
+      margin-bottom: 6px;
+      padding-left: 4px;
+      text-transform: none;
+
+      @include mobile {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
     }
   }
 
   .listContent {
     max-width: 1000px;
-    height: 67px;
-    background-color: #fafcfd;
-    margin-bottom: 3px;
-    border: 1px solid #e4e4e8;
-    border-radius: 6px;
+    height: 52px;
+    background-color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 8px;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0;
     cursor: pointer;
     @include flex(space-between, center);
-    transition: background-color 150ms ease, border-color 150ms ease;
+    transition: background-color 120ms ease;
+    padding: 0 4px;
+
+    &:first-of-type {
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 8px 8px 0 0;
+    }
+
+    &:last-of-type {
+      border-bottom: none;
+      border-radius: 0 0 8px 8px;
+    }
+
+    &:only-of-type {
+      border-radius: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    @include mobile {
+      max-width: 100%;
+      height: auto;
+      min-height: 56px;
+      padding: 10px 0;
+      border-radius: 4px;
+      background-color: #fafcfd;
+      border: 1px solid #e4e4e8;
+      border-radius: 4px;
+      margin-bottom: 2px;
+
+      &:first-of-type,
+      &:last-of-type,
+      &:only-of-type {
+        border-radius: 4px;
+        border: 1px solid #e4e4e8;
+      }
+
+      .n-icon {
+        margin-right: 10px;
+      }
+
+      .contentList {
+        flex: 1;
+        min-width: 0;
+      }
+    }
 
     &:hover {
-      background-color: #f5f6f8;
-      border-color: #d0d3da;
+      background-color: rgba(0, 0, 0, 0.03);
     }
 
     .n-icon {
-      margin-right: 20px;
+      margin-right: 16px;
     }
 
     .contentList {
       @include flex(flex-start, center);
+
+      @include mobile {
+        flex: 1;
+        min-width: 0;
+
+        & > div {
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        .fontIcon {
+          width: 18px;
+          margin-left: 10px;
+          margin-right: 10px;
+        }
+      }
     }
 
     .contentTitle {
-      font-size: 12px;
+      font-size: 13px;
       color: #1b1b1b;
-      font-weight: bold;
+      font-weight: 500;
+      margin-bottom: 1px;
+
+      @include mobile {
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     .contentDesc {
       font-size: 12px;
-      color: #757575;
+      color: #6b6b6b;
+
+      @include mobile {
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 220px;
+      }
     }
   }
 }
 
 .fontIcon {
-  width: 20px;
-  margin-left: 18px;
-  margin-right: 20px;
+  width: 22px;
+  margin-left: 10px;
+  margin-right: 14px;
 }
 
 .system {
   max-width: 1000px;
-  height: 68px;
-  margin-bottom: 26px;
-  padding: 0 4px;
+  margin-bottom: 20px;
+  padding: 20px 24px;
   @include flex(space-between, center);
+  background-color: rgba(255, 255, 255, 0.65);
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+
+  @include tablet {
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+
+  @include mobile {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #fafcfd;
+    border: 1px solid #e4e4e8;
+  }
 
   .systemLeft {
-    @include flex(flex-start, flex-end);
+    @include flex(flex-start, center);
+    gap: 16px;
+
+    @include tablet {
+      gap: 12px;
+    }
+
+    @include mobile {
+      gap: 12px;
+      min-width: 0;
+    }
 
     img {
-      width: 112px;
-      height: 60px;
-      border: 1px solid #d0d3da;
-      border-radius: 8px;
-      margin-right: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      width: 140px;
+      height: 78px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+      object-fit: cover;
+      box-shadow: none;
+      flex-shrink: 0;
+
+      @include tablet {
+        width: 120px;
+        height: 68px;
+      }
+
+      @include mobile {
+        width: 80px;
+        height: 44px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e6;
+      }
+    }
+
+    .systemInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      @include mobile {
+        min-width: 0;
+        overflow: hidden;
+      }
+    }
+
+    .systemMeta {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .sep {
+      color: #b0b0b0;
+      font-size: 13px;
+      user-select: none;
     }
 
     .first {
-      color: #1a1a1a;
+      color: #1b1b1b;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 16px;
+      line-height: 1.3;
+
+      @include tablet {
+        font-size: 14px;
+      }
+
+      @include mobile {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     .second {
-      color: #565656;
+      color: #5d5d5d;
       font-size: 13px;
+
+      @include tablet {
+        font-size: 12px;
+      }
+
+      @include mobile {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     .rename {
       color: #0067c0;
       font-size: 13px;
       cursor: pointer;
+      padding: 1px 4px;
+      border-radius: 4px;
+      transition: background-color 120ms ease;
+
+      @include tablet {
+        font-size: 12px;
+      }
+
+      @include mobile {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        background-color: rgba(0, 103, 192, 0.06);
+        padding: 2px 8px;
+      }
 
       &:hover {
-        color: #00509e;
+        background-color: rgba(0, 103, 192, 0.06);
+      }
+
+      &:active {
+        background-color: rgba(0, 103, 192, 0.1);
       }
     }
   }
 
   .systemRight {
-    @include flex(flex-end, center);
+    @include flex(center, center);
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 5px;
-    transition: background-color 150ms ease;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: background-color 120ms ease;
+    flex-shrink: 0;
+    gap: 10px;
+    background-color: transparent;
+    border: 1px solid transparent;
+
+    @include tablet {
+      padding: 6px 10px;
+      gap: 8px;
+    }
+
+    @include mobile {
+      justify-content: flex-start;
+      padding: 12px 14px;
+      min-width: 0;
+      gap: 10px;
+      background-color: #f5f6f8;
+      border: 1px solid #e8e8ec;
+      border-radius: 6px;
+
+      & > div {
+        min-width: 0;
+        overflow: hidden;
+
+        .updated,
+        .lastTimeUpdate {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
 
     &:hover {
       background-color: rgba(0, 0, 0, 0.03);
     }
 
+    &:active {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
     img {
-      width: 20px;
-      height: 20px;
-      margin-right: 16px;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
     }
 
     .updated {
-      font-weight: 600;
-      font-size: 14px;
-      color: #101010;
+      font-weight: 400;
+      font-size: 12px;
+      color: #5d5d5d;
+      margin-bottom: 1px;
     }
 
     .lastTimeUpdate {
-      font-size: 12px;
-      color: #616161;
+      font-size: 11px;
+      color: #8a8a8a;
     }
   }
 }
@@ -338,21 +588,68 @@ const changeBgImg = (num: number) => {
 .network {
   max-width: 1000px;
   @include flex(space-between, center);
+  gap: 8px;
   margin-bottom: 20px;
-  padding: 0 4px;
+  padding: 0 2px;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
 
   &Left {
+    flex: 1;
     @include flex(flex-start, center);
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+
+    @include mobile {
+      padding: 12px 14px;
+      background-color: #fafcfd;
+      border: 1px solid #e4e4e8;
+    }
+
+    & > div {
+      min-width: 0;
+      overflow: hidden;
+
+      .networkDesc {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
 
     & > .n-icon {
-      margin-right: 24px;
+      margin-right: 16px;
+
+      @include mobile {
+        margin-right: 12px;
+        font-size: 48px !important;
+      }
     }
   }
 
   &Center {
-    padding: 11px 12px;
-    border-radius: 6px;
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 8px;
     @include flex(flex-start, center);
+    background-color: transparent;
+    border: none;
+
+    @include mobile {
+      background-color: #fafcfd;
+      border: 1px solid #e4e4e8;
+    }
 
     & > .n-icon {
       margin-right: 12px;
@@ -360,22 +657,38 @@ const changeBgImg = (num: number) => {
   }
 
   &Right {
-    width: 192px;
-    height: 56px;
-    border-radius: 6px;
-    @include flex(space-around, center);
+    flex: 1;
+    min-height: 56px;
+    border-radius: 8px;
+    @include flex(flex-start, center);
+    padding: 14px 16px;
+    background-color: transparent;
+    border: none;
+
+    @include mobile {
+      width: 100%;
+      height: auto;
+      padding: 12px 14px;
+      background-color: #fafcfd;
+      border: 1px solid #e4e4e8;
+      justify-content: space-between;
+    }
+
+    & > .n-icon:last-child {
+      margin-left: auto;
+    }
   }
 
   &Title {
-    font-size: 14px;
-    color: #191a1a;
+    font-size: 13px;
+    color: #1b1b1b;
     font-weight: 600;
   }
 
   &Desc {
     @include flex(flex-start, center);
     font-size: 12px;
-    color: #5b5d5f;
+    color: #6b6b6b;
 
     .n-icon {
       margin-right: 6px;
@@ -384,41 +697,60 @@ const changeBgImg = (num: number) => {
 
   .hoverStyle {
     cursor: pointer;
-    transition: background-color 150ms ease;
+    transition: background-color 120ms ease;
 
     &:hover {
-      background-color: #f0f2f5;
+      background-color: rgba(0, 0, 0, 0.03) !important;
     }
   }
 }
 
 .account {
   max-width: 1000px;
-  height: 92px;
-  margin-bottom: 30px;
-  padding: 0 4px;
+  margin-bottom: 20px;
+  padding: 20px 24px;
   @include flex(flex-start, center);
+  background-color: rgba(255, 255, 255, 0.65);
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+
+  @include mobile {
+    height: auto;
+    margin-bottom: 16px;
+    padding: 14px;
+    background-color: #fafcfd;
+    border: 1px solid #e4e4e8;
+  }
 
   img {
-    height: 100%;
+    height: 52px;
+    width: 52px;
     border-radius: 50%;
     margin-right: 16px;
+    box-shadow: none;
+
+    @include mobile {
+      height: 56px;
+      width: 56px;
+    }
   }
 
   .userName {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: #1b1b1b;
+    margin-bottom: 2px;
   }
 
   &Type {
     font-size: 12px;
-    color: #5f6264;
+    color: #6b6b6b;
   }
 
   &Auth {
     font-size: 12px;
-    color: #5f6264;
+    color: #6b6b6b;
   }
 }
 
@@ -426,14 +758,36 @@ const changeBgImg = (num: number) => {
   @include flex(flex-start, center);
   max-width: 1000px;
   margin-bottom: 20px;
-  padding: 0 4px;
+  padding: 16px 20px;
+  background-color: rgba(255, 255, 255, 0.65);
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    background-color: #fafcfd;
+    border: 1px solid #e4e4e8;
+  }
 
   .viewBox {
-    width: 335px;
-    height: 188px;
-    border-radius: 8px;
-    margin-right: 48px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    width: 300px;
+    height: 168px;
+    border-radius: 6px;
+    margin-right: 32px;
+    box-shadow: none;
+
+    @include mobile {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16/9;
+      margin-right: 0;
+      margin-bottom: 16px;
+      border-radius: 6px;
+    }
   }
 
   .selectBox {
@@ -442,7 +796,12 @@ const changeBgImg = (num: number) => {
     font-weight: 600;
 
     .boxTitle {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+
+      @include mobile {
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
     }
 
     .bgImgBox {
@@ -451,15 +810,25 @@ const changeBgImg = (num: number) => {
       @include grid(3, 2);
       grid-gap: 8px;
 
+      @include mobile {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 3/2;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        grid-gap: 6px;
+      }
+
       img {
         width: 100%;
         height: 100%;
         border-radius: 6px;
         cursor: pointer;
-        transition: transform 150ms ease;
+        transition: transform 150ms ease, box-shadow 150ms ease;
 
         &:hover {
           transform: scale(1.03);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
       }
 
@@ -467,6 +836,7 @@ const changeBgImg = (num: number) => {
         box-sizing: border-box;
         padding: 1px;
         border: 2px solid #0067c0;
+        box-shadow: 0 0 0 2px rgba(0, 103, 192, 0.2);
       }
     }
   }
@@ -475,45 +845,97 @@ const changeBgImg = (num: number) => {
 .update {
   max-width: 1000px;
   @include flex(space-between, center);
-  margin-bottom: 26px;
-  padding: 0 4px;
+  margin-bottom: 16px;
+  padding: 16px 24px;
+  background-color: rgba(255, 255, 255, 0.65);
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    max-width: 100%;
+    overflow: hidden;
+    background-color: #fafcfd;
+    border: 1px solid #e4e4e8;
+  }
 
   &Less {
     @include flex(flex-start, center);
     cursor: pointer;
     color: #0067c0;
-    font-size: 12px;
+    font-size: 13px;
     padding: 4px 8px;
     border-radius: 4px;
-    transition: background-color 150ms ease;
+    transition: background-color 120ms ease;
+    max-width: 1000px;
+
+    @include mobile {
+      background-color: rgba(0, 103, 192, 0.06);
+      padding: 6px 10px;
+    }
 
     &:hover {
       background-color: rgba(0, 103, 192, 0.06);
     }
 
     .n-icon {
-      margin-right: 10px;
+      margin-right: 8px;
     }
   }
 
   &Left {
     @include flex(flex-start, center);
+    min-width: 0;
+
+    @include mobile {
+      min-width: 0;
+
+      & > div {
+        min-width: 0;
+        overflow: hidden;
+
+        .lastedVer,
+        .lastCheck {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
 
     img {
-      width: 84px;
-      margin-left: 12px;
-      margin-right: 18px;
+      width: 48px;
+      height: 48px;
+      margin-right: 16px;
+      object-fit: contain;
+
+      @include mobile {
+        width: 48px;
+        height: 48px;
+        margin-left: 0;
+        margin-right: 12px;
+      }
     }
 
     .lastedVer {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: #191a1a;
+      color: #1b1b1b;
+      margin-bottom: 2px;
+
+      @include mobile {
+        font-size: 14px;
+      }
     }
 
     .lastCheck {
       font-size: 12px;
-      color: #5f6264;
+      color: #6b6b6b;
     }
   }
 }

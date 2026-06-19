@@ -10,6 +10,24 @@
   height: 100vh;
 }
 
+/* ==========================================
+   WP8.1 移动端主题变量
+   ========================================== */
+:root {
+  --wp-bg-color: #1f1f1f;
+  --wp-font-color: #ffffff;
+  --wp-font-muted: rgba(255, 255, 255, 0.5);
+  --wp-accent-color: #0078d7;
+  --wp-divider-color: rgba(255, 255, 255, 0.08);
+  --wp-hover-bg: rgba(255, 255, 255, 0.06);
+  --wp-appbar-bg: #1a1a1a;
+  --wp-tile-bg: var(--wp-accent-color);
+  --wp-tile-font: #ffffff;
+  --wp-search-bg: rgba(255, 255, 255, 0.12);
+  --wp-search-font: rgba(255, 255, 255, 0.6);
+  --wp-card-bg: rgba(255, 255, 255, 0.06);
+}
+
 .home-container[data-theme='default']{
   /*
    * 全局

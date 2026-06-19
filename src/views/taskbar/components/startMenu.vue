@@ -362,6 +362,8 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@use "@/style/responsive" as *;
+
 @mixin bgHover {
   border-radius: 5px;
   background-color: inherit;
@@ -812,5 +814,106 @@ onMounted(() => {
 .containerPinned,
 .containerAllApp {
   will-change: left;
+}
+
+// ==========================================
+// 平板端适配
+// ==========================================
+@include tablet {
+  .menuSearch {
+    height: 58px;
+    padding: 22px 20px 0;
+
+    .searchBox {
+      height: 34px;
+
+      img {
+        height: 12px;
+        margin-left: 12px;
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .menuBody {
+    height: calc(100% - 58px - 56px);
+    padding: 12px 20px 0;
+
+    .bodyTitle {
+      height: 40px;
+      margin-bottom: 4px;
+
+      .titleLeft {
+        font-size: 13px;
+      }
+    }
+
+    .bodyContainer {
+      height: calc(100% - 44px);
+    }
+  }
+
+  .containerPinned {
+    .pinnedAppBox {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 3px;
+      margin-bottom: 24px;
+    }
+
+    .pinnedList {
+      max-width: 68px;
+      padding: 6px 2px 4px;
+
+      img {
+        width: 26px;
+        height: 26px;
+      }
+
+      span {
+        font-size: 10px;
+      }
+    }
+
+    .pinnedRecommend {
+      padding-left: 4px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+  }
+
+  .containerAllApp {
+    width: calc(100% + 20px);
+    padding-left: 20px;
+
+    .itemLetterBox {
+      grid-template-columns: repeat(4, 48px);
+      grid-template-rows: repeat(7, 42px);
+
+      div {
+        height: 42px;
+        line-height: 42px;
+        font-size: 13px;
+      }
+    }
+  }
+
+  .menuFooter {
+    height: 55px;
+    padding: 0 32px;
+
+    .footerUser {
+      height: 36px;
+      line-height: 36px;
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
+
+      span {
+        font-size: 11px;
+      }
+    }
+  }
 }
 </style>
